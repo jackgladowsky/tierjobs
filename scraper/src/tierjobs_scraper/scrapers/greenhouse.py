@@ -95,33 +95,58 @@ class GreenhouseScraper(APIBasedScraper):
             if data.get("location"):
                 location = data["location"].get("name")
 
-            # Check if remote
+            # Check if remote (inferred from location text)
             remote = False
             if location and "remote" in location.lower():
                 remote = True
 
-            # Infer level from title
+            # Inferred fields (not from API)
             level = self.infer_level(title)
             job_type = self.infer_job_type(title)
 
-            # Get department/team (available in full mode)
+            # Raw fields - departments (full mode only)
             team = None
+            departments = []
             if data.get("departments"):
-                team = data["departments"][0].get("name")
+                departments = [d.get("name") for d in data["departments"] if d.get("name")]
+                if departments:
+                    team = departments[0]
 
-            # Extract description (only in full mode)
+            # Raw fields - offices (full mode only)
+            offices = []
+            if data.get("offices"):
+                offices = [o.get("name") for o in data["offices"] if o.get("name")]
+
+            # Raw fields - metadata (full mode only)
+            metadata = {}
+            if data.get("metadata"):
+                for m in data["metadata"]:
+                    if m.get("name") and m.get("value"):
+                        metadata[m["name"]] = m["value"]
+
+            # Raw fields - description (full mode only)
             description = None
             if full and data.get("content"):
                 description = data["content"]
 
-            # Extract posting date (prefer first_published over updated_at)
+            # Raw fields - dates
             posted_at = None
-            date_field = data.get("first_published") or data.get("updated_at")
-            if date_field:
+            if data.get("first_published"):
                 try:
-                    posted_at = datetime.fromisoformat(date_field.replace("Z", "+00:00"))
+                    posted_at = datetime.fromisoformat(data["first_published"].replace("Z", "+00:00"))
                 except Exception:
                     pass
+
+            updated_at = None
+            if data.get("updated_at"):
+                try:
+                    updated_at = datetime.fromisoformat(data["updated_at"].replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
+            # Raw fields - IDs
+            internal_job_id = data.get("internal_job_id")
+            requisition_id = data.get("requisition_id")
 
             return self.create_job(
                 id=self.make_job_id(job_id),
@@ -132,8 +157,14 @@ class GreenhouseScraper(APIBasedScraper):
                 level=level,
                 job_type=job_type,
                 team=team,
+                departments=departments,
+                offices=offices,
+                metadata=metadata,
                 description=description,
                 posted_at=posted_at,
+                updated_at=updated_at,
+                internal_job_id=internal_job_id,
+                requisition_id=requisition_id,
             )
         except Exception as e:
             print(f"Error parsing job: {e}")

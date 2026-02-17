@@ -46,19 +46,32 @@ class Job(BaseModel):
     location: str | None = None
     remote: bool = False
     
+    # Inferred fields (not from API)
     level: JobLevel = JobLevel.UNKNOWN
     job_type: JobType = JobType.OTHER
-    team: str | None = None
     
-    description: str | None = None
+    # Raw fields from API
+    team: str | None = None  # departments[0].name
+    departments: list[str] = Field(default_factory=list)  # All department names
+    offices: list[str] = Field(default_factory=list)  # Office locations
+    
+    description: str | None = None  # Full HTML content
+    metadata: dict = Field(default_factory=dict)  # Raw metadata from API
+    
     requirements: list[str] = Field(default_factory=list)
     
     salary_min: int | None = None
     salary_max: int | None = None
     equity: bool | None = None
     
-    posted_at: datetime | None = None
+    # Dates
+    posted_at: datetime | None = None  # first_published
+    updated_at: datetime | None = None  # updated_at
     scraped_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Raw IDs from API
+    internal_job_id: int | None = None
+    requisition_id: str | None = None
     
     # Computed score (tier + TC + other factors)
     score: float | None = None
