@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 import { jobLevelValidator, jobTypeValidator } from "./schema";
 
 // Job document type for upserts
@@ -79,21 +80,32 @@ export const list = query({
   },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50;
-    let jobsQuery = ctx.db.query("jobs");
+    const baseQuery = ctx.db.query("jobs");
 
-    // Apply index-based filters
+    // Build query with appropriate index
+    let jobs;
     if (args.tier) {
-      jobsQuery = jobsQuery.withIndex("by_tier", (q) => q.eq("tier", args.tier!));
+      jobs = await baseQuery
+        .withIndex("by_tier", (q) => q.eq("tier", args.tier!))
+        .order("desc")
+        .take(limit * 2);
     } else if (args.level) {
-      jobsQuery = jobsQuery.withIndex("by_level", (q) => q.eq("level", args.level!));
+      jobs = await baseQuery
+        .withIndex("by_level", (q) => q.eq("level", args.level!))
+        .order("desc")
+        .take(limit * 2);
     } else if (args.jobType) {
-      jobsQuery = jobsQuery.withIndex("by_jobType", (q) => q.eq("jobType", args.jobType!));
+      jobs = await baseQuery
+        .withIndex("by_jobType", (q) => q.eq("jobType", args.jobType!))
+        .order("desc")
+        .take(limit * 2);
     } else {
       // Default: order by score descending
-      jobsQuery = jobsQuery.withIndex("by_score");
+      jobs = await baseQuery
+        .withIndex("by_score")
+        .order("desc")
+        .take(limit * 2);
     }
-
-    let jobs = await jobsQuery.order("desc").take(limit * 2);
 
     // Apply remaining filters in memory
     if (args.tier && args.level) {
@@ -160,6 +172,14 @@ export const get = query({
   },
 });
 
+// Get a single job by Convex _id
+export const getById = query({
+  args: { id: v.id("jobs") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 // Delete a job by jobId
 export const remove = mutation({
   args: { jobId: v.string() },
@@ -177,15 +197,79 @@ export const remove = mutation({
   },
 });
 
+// Paginated list for infinite scroll
+export const listPaginated = query({
+  args: {
+    tier: v.optional(v.string()),
+    level: v.optional(jobLevelValidator),
+    jobType: v.optional(jobTypeValidator),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db.query("jobs");
+    
+    // Use the most selective index first, then filter for additional criteria
+    if (args.tier) {
+      // Start with tier index
+      let tierQuery = query.withIndex("by_tier", (q) => q.eq("tier", args.tier!));
+      
+      // Apply additional filters if present
+      if (args.level && args.jobType) {
+        return await tierQuery
+          .filter((q) => q.and(
+            q.eq(q.field("level"), args.level!),
+            q.eq(q.field("jobType"), args.jobType!)
+          ))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      } else if (args.level) {
+        return await tierQuery
+          .filter((q) => q.eq(q.field("level"), args.level!))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      } else if (args.jobType) {
+        return await tierQuery
+          .filter((q) => q.eq(q.field("jobType"), args.jobType!))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+      
+      return await tierQuery.order("desc").paginate(args.paginationOpts);
+    } else if (args.level) {
+      // Start with level index
+      let levelQuery = query.withIndex("by_level", (q) => q.eq("level", args.level!));
+      
+      if (args.jobType) {
+        return await levelQuery
+          .filter((q) => q.eq(q.field("jobType"), args.jobType!))
+          .order("desc")
+          .paginate(args.paginationOpts);
+      }
+      
+      return await levelQuery.order("desc").paginate(args.paginationOpts);
+    } else if (args.jobType) {
+      return await query
+        .withIndex("by_jobType", (q) => q.eq("jobType", args.jobType!))
+        .order("desc")
+        .paginate(args.paginationOpts);
+    }
+    
+    return await query.order("desc").paginate(args.paginationOpts);
+  },
+});
+
 // Count jobs (useful for stats)
 export const count = query({
   args: { tier: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    let q = ctx.db.query("jobs");
+    const baseQuery = ctx.db.query("jobs");
     if (args.tier) {
-      q = q.withIndex("by_tier", (qb) => qb.eq("tier", args.tier!));
+      const jobs = await baseQuery
+        .withIndex("by_tier", (qb) => qb.eq("tier", args.tier!))
+        .collect();
+      return jobs.length;
     }
-    const jobs = await q.collect();
+    const jobs = await baseQuery.collect();
     return jobs.length;
   },
 });

@@ -115,6 +115,41 @@ http.route({
   }),
 });
 
+// Bulk upsert companies
+http.route({
+  path: "/companies/bulk",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const companies = body.companies;
+
+      if (!Array.isArray(companies)) {
+        return new Response(JSON.stringify({ error: "companies must be an array" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const cleanedCompanies = companies.map(stripNulls);
+      const result = await ctx.runMutation(api.companies.bulkUpsert, { companies: cleanedCompanies });
+
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: String(error) }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
 // Update company job count after scrape
 http.route({
   path: "/companies/job-count",

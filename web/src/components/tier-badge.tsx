@@ -14,6 +14,11 @@ const tierConfig: Record<Tier, { bg: string; text: string; border: string; glow?
     border: 'border-slate-300',
     glow: 'shadow-slate-300/50 shadow-md',
   },
+  'S-': {
+    bg: 'bg-gradient-to-r from-slate-400 to-slate-300',
+    text: 'text-slate-900 font-semibold',
+    border: 'border-slate-400',
+  },
   'A++': {
     bg: 'bg-gradient-to-r from-purple-600 to-violet-500',
     text: 'text-white font-semibold',
@@ -29,10 +34,25 @@ const tierConfig: Record<Tier, { bg: string; text: string; border: string; glow?
     text: 'text-white font-medium',
     border: 'border-teal-400',
   },
+  'A-': {
+    bg: 'bg-gradient-to-r from-teal-500 to-teal-400',
+    text: 'text-white font-medium',
+    border: 'border-teal-300',
+  },
+  'B+': {
+    bg: 'bg-gradient-to-r from-gray-500 to-gray-400',
+    text: 'text-white font-medium',
+    border: 'border-gray-300',
+  },
   'B': {
     bg: 'bg-gradient-to-r from-gray-600 to-gray-500',
     text: 'text-white font-medium',
     border: 'border-gray-400',
+  },
+  'B-': {
+    bg: 'bg-gradient-to-r from-gray-700 to-gray-600',
+    text: 'text-white font-medium',
+    border: 'border-gray-500',
   },
 };
 
@@ -43,7 +63,11 @@ interface TierBadgeProps {
 }
 
 export function TierBadge({ tier, size = 'md', className }: TierBadgeProps) {
-  const config = tierConfig[tier];
+  const config = tierConfig[tier] ?? {
+    bg: 'bg-gray-500',
+    text: 'text-white',
+    border: 'border-gray-400',
+  };
   
   const sizeClasses = {
     sm: 'text-xs px-1.5 py-0.5',

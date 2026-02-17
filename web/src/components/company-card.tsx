@@ -1,8 +1,74 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Company } from '@/lib/types';
 import { TierBadge } from './tier-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Briefcase, ExternalLink } from 'lucide-react';
+
+// Fix domains that point to ATS providers instead of actual company
+const domainOverrides: Record<string, string> = {
+  'anthropic': 'anthropic.com',
+  'anduril': 'anduril.com',
+  'databricks': 'databricks.com',
+  'roblox': 'roblox.com',
+  'airbnb': 'airbnb.com',
+  'block': 'block.xyz',
+  'coinbase': 'coinbase.com',
+  'figma': 'figma.com',
+  'stripe': 'stripe.com',
+  'uber': 'uber.com',
+  'waymo': 'waymo.com',
+  'datadog': 'datadoghq.com',
+  'doordash': 'doordash.com',
+  'mongodb': 'mongodb.com',
+  'pinterest': 'pinterest.com',
+  'robinhood': 'robinhood.com',
+  'cloudflare': 'cloudflare.com',
+  'dropbox': 'dropbox.com',
+  'instacart': 'instacart.com',
+  'reddit': 'reddit.com',
+  'snap': 'snap.com',
+  'twilio': 'twilio.com',
+  'discord': 'discord.com',
+  'asana': 'asana.com',
+  'duolingo': 'duolingo.com',
+  'epic-games': 'epicgames.com',
+  'etsy': 'etsy.com',
+  'spotify': 'spotify.com',
+  'palantir': 'palantir.com',
+  'plaid': 'plaid.com',
+};
+
+function CompanyLogo({ company }: { company: Company }) {
+  // Use Clearbit Logo API (free, no key needed)
+  const domain = domainOverrides[company.slug] || company.domain;
+  const logoUrl = domain && !domain.includes('greenhouse') && !domain.includes('lever') && !domain.includes('ashby')
+    ? `https://logo.clearbit.com/${domain}` 
+    : null;
+  
+  if (!logoUrl) {
+    return (
+      <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground">
+        {company.name.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-12 h-12 rounded-lg bg-white border border-border overflow-hidden flex items-center justify-center">
+      <img
+        src={logoUrl}
+        alt={`${company.name} logo`}
+        className="w-10 h-10 object-contain"
+        onError={(e) => {
+          // Fallback to initial if logo fails to load
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-bold text-muted-foreground">${company.name.charAt(0)}</span>`;
+        }}
+      />
+    </div>
+  );
+}
 
 interface CompanyCardProps {
   company: Company;
@@ -16,9 +82,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
           {/* Header */}
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground">
-                {company.name.charAt(0)}
-              </div>
+              <CompanyLogo company={company} />
               <div>
                 <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
                   {company.name}

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,22 +9,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
-import { Tier, JobLevel, JobType } from '@/lib/types';
+import { Search, X } from 'lucide-react';
 
-const tiers: Tier[] = ['S+', 'S', 'A++', 'A+', 'A', 'B'];
-const levels: JobLevel[] = ['Intern', 'Entry', 'Mid', 'Senior', 'Staff', 'Principal', 'Director', 'VP', 'C-Level'];
-const types: JobType[] = ['Full-time', 'Part-time', 'Contract', 'Internship'];
-const remoteOptions = ['Remote', 'Hybrid', 'On-site'];
-const locations = ['Mountain View, CA', 'San Francisco, CA', 'New York, NY', 'Seattle, WA', 'Austin, TX', 'Paris, France'];
+// Match database values exactly
+const TIERS = ['S+', 'S', 'S-', 'A++', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
+
+const LEVELS = [
+  { value: 'intern', label: 'Intern' },
+  { value: 'new_grad', label: 'New Grad' },
+  { value: 'junior', label: 'Junior' },
+  { value: 'mid', label: 'Mid-Level' },
+  { value: 'senior', label: 'Senior' },
+  { value: 'staff', label: 'Staff' },
+  { value: 'principal', label: 'Principal' },
+  { value: 'director', label: 'Director' },
+  { value: 'vp', label: 'VP' },
+  { value: 'exec', label: 'Executive' },
+] as const;
+
+const JOB_TYPES = [
+  { value: 'swe', label: 'Software Engineer' },
+  { value: 'mle', label: 'ML Engineer' },
+  { value: 'ds', label: 'Data Scientist' },
+  { value: 'quant', label: 'Quant' },
+  { value: 'pm', label: 'Product Manager' },
+  { value: 'design', label: 'Design' },
+  { value: 'devops', label: 'DevOps/SRE' },
+  { value: 'security', label: 'Security' },
+  { value: 'research', label: 'Research' },
+  { value: 'other', label: 'Other' },
+] as const;
 
 export interface Filters {
   search: string;
   tier: string;
   level: string;
-  type: string;
-  remote: string;
-  location: string;
+  jobType: string;
 }
 
 interface FilterBarProps {
@@ -34,8 +53,6 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-
   const updateFilter = (key: keyof Filters, value: string) => {
     onFiltersChange({ ...filters, [key]: value });
   };
@@ -45,89 +62,65 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
       search: '',
       tier: '',
       level: '',
-      type: '',
-      remote: '',
-      location: '',
+      jobType: '',
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== '');
+  const hasActiveFilters = filters.tier || filters.level || filters.jobType;
 
   return (
     <div className="space-y-4">
       {/* Search bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search jobs, companies, or keywords..."
-            value={filters.search}
-            onChange={(e) => updateFilter('search', e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button
-          variant="outline"
-          className="lg:hidden"
-          onClick={() => setShowMobileFilters(!showMobileFilters)}
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-        </Button>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search jobs..."
+          value={filters.search}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="pl-9"
+        />
       </div>
 
-      {/* Filters - Desktop */}
-      <div className={`flex-wrap gap-2 ${showMobileFilters ? 'flex' : 'hidden lg:flex'}`}>
-        <Select value={filters.tier} onValueChange={(v) => updateFilter('tier', v)}>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <Select 
+          value={filters.tier || undefined} 
+          onValueChange={(v) => updateFilter('tier', v)}
+        >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>
-            {tiers.map(t => (
+            {TIERS.map(t => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={filters.level} onValueChange={(v) => updateFilter('level', v)}>
-          <SelectTrigger className="w-[130px]">
+        <Select 
+          value={filters.level || undefined} 
+          onValueChange={(v) => updateFilter('level', v)}
+        >
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Level" />
           </SelectTrigger>
           <SelectContent>
-            {levels.map(l => (
-              <SelectItem key={l} value={l}>{l}</SelectItem>
+            {LEVELS.map(l => (
+              <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={filters.type} onValueChange={(v) => updateFilter('type', v)}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Type" />
+        <Select 
+          value={filters.jobType || undefined} 
+          onValueChange={(v) => updateFilter('jobType', v)}
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Role Type" />
           </SelectTrigger>
           <SelectContent>
-            {types.map(t => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filters.remote} onValueChange={(v) => updateFilter('remote', v)}>
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Remote" />
-          </SelectTrigger>
-          <SelectContent>
-            {remoteOptions.map(r => (
-              <SelectItem key={r} value={r}>{r}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={filters.location} onValueChange={(v) => updateFilter('location', v)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Location" />
-          </SelectTrigger>
-          <SelectContent>
-            {locations.map(l => (
-              <SelectItem key={l} value={l}>{l}</SelectItem>
+            {JOB_TYPES.map(t => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>

@@ -6,7 +6,6 @@ import { JobCard } from '@/components/job-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  MapPin, 
   Globe, 
   Briefcase,
   ArrowLeft,
@@ -68,8 +67,8 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                   </div>
                   <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" />
-                      <span>{company.location}</span>
+                      <Globe className="h-4 w-4" />
+                      <span>{company.domain}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Briefcase className="h-4 w-4" />
@@ -77,15 +76,15 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                     </div>
                   </div>
                 </div>
-                {company.website && (
+                {company.careersUrl && (
                   <a 
-                    href={company.website}
+                    href={company.careersUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Button variant="outline" className="gap-2">
-                      <Globe className="h-4 w-4" />
-                      Website
+                      <Briefcase className="h-4 w-4" />
+                      Careers
                       <ExternalLink className="h-3 w-3" />
                     </Button>
                   </a>

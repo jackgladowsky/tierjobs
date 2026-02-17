@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, paginationOptsValidator } from "./_generated/server";
 import { jobLevelValidator, jobTypeValidator } from "./schema";
 
 // Job document type for upserts
@@ -160,6 +160,14 @@ export const get = query({
   },
 });
 
+// Get a single job by Convex _id
+export const getById = query({
+  args: { id: v.id("jobs") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 // Delete a job by jobId
 export const remove = mutation({
   args: { jobId: v.string() },
@@ -174,6 +182,30 @@ export const remove = mutation({
       return { deleted: true };
     }
     return { deleted: false };
+  },
+});
+
+// Paginated list for infinite scroll
+export const listPaginated = query({
+  args: {
+    tier: v.optional(v.string()),
+    level: v.optional(jobLevelValidator),
+    jobType: v.optional(jobTypeValidator),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db.query("jobs");
+    
+    // Apply filters
+    if (args.tier) {
+      query = query.withIndex("by_tier", (q) => q.eq("tier", args.tier!));
+    } else if (args.level) {
+      query = query.withIndex("by_level", (q) => q.eq("level", args.level!));
+    } else if (args.jobType) {
+      query = query.withIndex("by_jobType", (q) => q.eq("jobType", args.jobType!));
+    }
+    
+    return await query.order("desc").paginate(args.paginationOpts);
   },
 });
 

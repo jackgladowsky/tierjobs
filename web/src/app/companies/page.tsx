@@ -1,17 +1,25 @@
-import { companies } from '@/lib/mock-data';
+"use client";
+
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { CompanyCard } from '@/components/company-card';
 import { TierBadge } from '@/components/tier-badge';
 import { Tier } from '@/lib/types';
-import { Building2 } from 'lucide-react';
+import { Building2, Loader2 } from 'lucide-react';
 
-export const metadata = {
-  title: 'Companies - TierJobs',
-  description: 'Browse top-tier tech companies by ranking.',
-};
-
-const tiers: Tier[] = ['S+', 'S', 'A++', 'A+', 'A', 'B'];
+const tiers: Tier[] = ['S+', 'S', 'S-', 'A++', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
 
 export default function CompaniesPage() {
+  const companies = useQuery(api.companies.list, { limit: 200 });
+
+  if (companies === undefined) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   const companiesByTier = tiers.reduce((acc, tier) => {
     acc[tier] = companies.filter(c => c.tier === tier);
     return acc;
@@ -32,7 +40,7 @@ export default function CompaniesPage() {
       <div className="space-y-12">
         {tiers.map(tier => {
           const tierCompanies = companiesByTier[tier];
-          if (tierCompanies.length === 0) return null;
+          if (!tierCompanies || tierCompanies.length === 0) return null;
 
           return (
             <section key={tier}>
@@ -44,7 +52,15 @@ export default function CompaniesPage() {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tierCompanies.map(company => (
-                  <CompanyCard key={company.id} company={company} />
+                  <CompanyCard key={company._id} company={{
+                    id: company._id,
+                    name: company.name,
+                    slug: company.slug,
+                    tier: company.tier as Tier,
+                    domain: company.domain,
+                    careersUrl: company.careersUrl,
+                    jobCount: company.jobCount,
+                  }} />
                 ))}
               </div>
             </section>

@@ -1,10 +1,19 @@
-import { JobListLive } from '@/components/job-list-live';
-import { Briefcase } from 'lucide-react';
+import { Suspense } from 'react';
+import { JobsPageClient } from '@/components/jobs-page-client';
+import { Briefcase, Loader2 } from 'lucide-react';
 
 export const metadata = {
   title: 'Jobs - TierJobs',
   description: 'Browse open positions at top-tier tech companies.',
 };
+
+function JobsLoading() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+    </div>
+  );
+}
 
 export default function JobsPage() {
   return (
@@ -18,7 +27,9 @@ export default function JobsPage() {
           Browse open positions at top-tier companies
         </p>
       </div>
-      <JobListLive limit={100} />
+      <Suspense fallback={<JobsLoading />}>
+        <JobsPageClient />
+      </Suspense>
     </div>
   );
 }

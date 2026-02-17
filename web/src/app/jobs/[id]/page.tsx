@@ -1,11 +1,14 @@
+"use client";
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getJobById, getJobsByCompany } from '@/lib/mock-data';
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 import { TierBadge } from '@/components/tier-badge';
-import { JobCard } from '@/components/job-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tier, JobLevel, JobType } from '@/lib/types';
 import { 
   MapPin, 
   Clock, 
@@ -14,25 +17,32 @@ import {
   DollarSign, 
   ExternalLink,
   ArrowLeft,
-  CheckCircle2,
-  Globe
+  Globe,
+  Loader2,
+  Users
 } from 'lucide-react';
+import { use } from 'react';
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-function formatSalary(salary: { min: number; max: number; currency: string }) {
+function formatSalary(min?: number, max?: number) {
+  if (!min && !max) return null;
   const format = (n: number) => {
     if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`;
     return `$${n}`;
   };
-  return `${format(salary.min)} - ${format(salary.max)} ${salary.currency}`;
+  if (min && max) return `${format(min)} - ${format(max)}`;
+  if (min) return `${format(min)}+`;
+  if (max) return `Up to ${format(max)}`;
+  return null;
 }
 
-function timeAgo(date: Date) {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
+function timeAgo(timestamp?: number) {
+  if (!timestamp) return 'Recently';
+  const now = Date.now();
+  const diff = now - timestamp;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
@@ -41,27 +51,71 @@ function timeAgo(date: Date) {
   return `${Math.floor(days / 30)} months ago`;
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { id } = await params;
-  const job = getJobById(id);
-  if (!job) return { title: 'Job Not Found - TierJobs' };
-  return {
-    title: `${job.title} at ${job.company.name} - TierJobs`,
-    description: job.description,
+function formatLevel(level: string): string {
+  const labels: Record<string, string> = {
+    intern: 'Intern',
+    new_grad: 'New Grad',
+    junior: 'Junior',
+    mid: 'Mid-Level',
+    senior: 'Senior',
+    staff: 'Staff',
+    principal: 'Principal',
+    director: 'Director',
+    vp: 'VP',
+    exec: 'Executive',
+    unknown: 'Unknown',
   };
+  return labels[level] || level;
 }
 
-export default async function JobDetailPage({ params }: PageProps) {
-  const { id } = await params;
-  const job = getJobById(id);
+function formatJobType(type: string): string {
+  const labels: Record<string, string> = {
+    swe: 'Software Engineering',
+    mle: 'Machine Learning',
+    ds: 'Data Science',
+    quant: 'Quantitative',
+    pm: 'Product Management',
+    design: 'Design',
+    devops: 'DevOps',
+    security: 'Security',
+    research: 'Research',
+    other: 'Other',
+  };
+  return labels[type] || type;
+}
 
-  if (!job) {
-    notFound();
+export default function JobDetailPage({ params }: PageProps) {
+  const { id } = use(params);
+  
+  // Try to get job by Convex ID
+  const job = useQuery(api.jobs.getById, { id: id as Id<"jobs"> });
+  const company = useQuery(api.companies.get, job ? { slug: job.companySlug } : "skip");
+  const relatedJobs = useQuery(api.jobs.byCompany, job ? { companySlug: job.companySlug } : "skip");
+
+  if (job === undefined) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  const relatedJobs = getJobsByCompany(job.company.slug)
-    .filter(j => j.id !== job.id)
-    .slice(0, 3);
+  if (job === null) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold mb-4">Job Not Found</h1>
+          <p className="text-muted-foreground mb-6">This job listing may have been removed or doesn't exist.</p>
+          <Link href="/jobs">
+            <Button>Browse All Jobs</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredRelatedJobs = relatedJobs?.filter(j => j._id !== job._id).slice(0, 3) ?? [];
+  const salaryDisplay = formatSalary(job.salaryMin, job.salaryMax);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -82,12 +136,9 @@ export default async function JobDetailPage({ params }: PageProps) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <TierBadge tier={job.tier} size="lg" />
-                  {job.featured && (
-                    <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30">
-                      Featured
-                    </Badge>
-                  )}
+                  <TierBadge tier={job.tier as Tier} size="lg" />
+                  <Badge variant="outline">{formatLevel(job.level)}</Badge>
+                  <Badge variant="secondary">{formatJobType(job.jobType)}</Badge>
                 </div>
                 <h1 className="text-3xl font-bold">{job.title}</h1>
               </div>
@@ -95,48 +146,51 @@ export default async function JobDetailPage({ params }: PageProps) {
 
             {/* Company info */}
             <Link 
-              href={`/companies/${job.company.slug}`}
+              href={`/companies/${job.companySlug}`}
               className="flex items-center gap-3 group"
             >
               <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground">
-                {job.company.name.charAt(0)}
+                {job.company.charAt(0)}
               </div>
               <div>
                 <div className="font-semibold group-hover:text-primary transition-colors">
-                  {job.company.name}
+                  {job.company}
                 </div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {job.company.location}
+                <div className="text-sm text-muted-foreground">
+                  {company?.domain || job.companySlug}
                 </div>
               </div>
             </Link>
 
             {/* Meta */}
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{job.location}</span>
-              </div>
+              {job.location && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{job.location}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Globe className="h-4 w-4" />
-                <Badge variant="outline">{job.remote}</Badge>
+                <Badge variant="outline">{job.remote ? 'Remote' : 'On-site'}</Badge>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Briefcase className="h-4 w-4" />
-                <span>{job.level} • {job.type}</span>
-              </div>
+              {job.team && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  <span>{job.team}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>Posted {timeAgo(job.postedAt)}</span>
               </div>
             </div>
 
-            {job.salary && (
+            {salaryDisplay && (
               <div className="flex items-center gap-2 text-lg">
                 <DollarSign className="h-5 w-5 text-green-500" />
                 <span className="font-semibold text-green-500">
-                  {formatSalary(job.salary)}
+                  {salaryDisplay}
                 </span>
                 <span className="text-sm text-muted-foreground">/ year</span>
               </div>
@@ -149,26 +203,42 @@ export default async function JobDetailPage({ params }: PageProps) {
               <CardTitle>About this role</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground leading-relaxed">
-                {job.description}
-              </p>
+              {job.description ? (
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {job.description}
+                </p>
+              ) : (
+                <p className="text-muted-foreground italic">
+                  No description available. Click "Apply Now" to see the full job details on the company's career page.
+                </p>
+              )}
             </CardContent>
           </Card>
 
-          {/* Requirements */}
+          {/* Job Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Requirements</CardTitle>
+              <CardTitle>Job Details</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {job.requirements.map((req, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{req}</span>
-                  </li>
-                ))}
-              </ul>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">Level</div>
+                  <div className="font-medium">{formatLevel(job.level)}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Type</div>
+                  <div className="font-medium">{formatJobType(job.jobType)}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Location</div>
+                  <div className="font-medium">{job.location || 'Not specified'}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Remote</div>
+                  <div className="font-medium">{job.remote ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -178,15 +248,14 @@ export default async function JobDetailPage({ params }: PageProps) {
           {/* Apply card */}
           <Card className="sticky top-24">
             <CardContent className="p-6 space-y-4">
-              <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black hover:from-amber-600 hover:to-yellow-500 gap-2">
-                Apply Now
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="w-full">
-                Save Job
-              </Button>
+              <a href={job.url} target="_blank" rel="noopener noreferrer">
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black hover:from-amber-600 hover:to-yellow-500 gap-2">
+                  Apply Now
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
               <p className="text-xs text-center text-muted-foreground">
-                You'll be redirected to the company's application page
+                You'll be redirected to {job.company}'s application page
               </p>
             </CardContent>
           </Card>
@@ -196,20 +265,23 @@ export default async function JobDetailPage({ params }: PageProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                About {job.company.name}
+                About {job.company}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Tier</span>
-                <TierBadge tier={job.company.tier} />
+                <TierBadge tier={job.tier as Tier} />
               </div>
-              {job.company.description && (
-                <p className="text-sm text-muted-foreground">
-                  {job.company.description}
-                </p>
+              {company && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Open Positions</span>
+                    <span className="font-medium">{company.jobCount}</span>
+                  </div>
+                </>
               )}
-              <Link href={`/companies/${job.company.slug}`}>
+              <Link href={`/companies/${job.companySlug}`}>
                 <Button variant="outline" className="w-full gap-2">
                   View Company
                   <ArrowLeft className="h-4 w-4 rotate-180" />
@@ -221,12 +293,24 @@ export default async function JobDetailPage({ params }: PageProps) {
       </div>
 
       {/* Related jobs */}
-      {relatedJobs.length > 0 && (
+      {filteredRelatedJobs.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-xl font-bold mb-4">More jobs at {job.company.name}</h2>
+          <h2 className="text-xl font-bold mb-4">More jobs at {job.company}</h2>
           <div className="grid gap-4">
-            {relatedJobs.map(j => (
-              <JobCard key={j.id} job={j} />
+            {filteredRelatedJobs.map(j => (
+              <Link key={j._id} href={`/jobs/${j._id}`}>
+                <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{j.title}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {j.location} • {formatLevel(j.level)}
+                      </div>
+                    </div>
+                    <TierBadge tier={j.tier as Tier} size="sm" />
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
