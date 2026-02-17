@@ -1,78 +1,121 @@
+"use client";
+
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getCompanyBySlug, getJobsByCompany } from '@/lib/mock-data';
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { TierBadge } from '@/components/tier-badge';
 import { JobCard } from '@/components/job-card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tier } from '@/lib/types';
 import { 
   Globe, 
   Briefcase,
   ArrowLeft,
   ExternalLink,
-  Building2
+  Building2,
+  MapPin,
+  Users
 } from 'lucide-react';
+import { use } from 'react';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params;
-  const company = getCompanyBySlug(slug);
-  if (!company) return { title: 'Company Not Found - TierJobs' };
-  return {
-    title: `${company.name} Jobs - TierJobs`,
-    description: company.description || `Browse open positions at ${company.name}`,
-  };
-}
+export default function CompanyDetailPage({ params }: PageProps) {
+  const { slug } = use(params);
+  
+  const company = useQuery(api.companies.get, { slug });
+  const jobs = useQuery(api.jobs.byCompany, { companySlug: slug });
 
-export default async function CompanyDetailPage({ params }: PageProps) {
-  const { slug } = await params;
-  const company = getCompanyBySlug(slug);
-
-  if (!company) {
-    notFound();
+  if (company === undefined) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-6 w-32 bg-white/5 mb-6" />
+          <Skeleton className="h-48 bg-white/5 rounded-xl mb-8" />
+          <Skeleton className="h-8 w-48 bg-white/5 mb-4" />
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} className="h-32 bg-white/5 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const jobs = getJobsByCompany(slug);
+  if (company === null) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold text-white mb-4">Company Not Found</h1>
+          <p className="text-white/50 mb-6">This company doesn't exist in our database.</p>
+          <Link href="/companies">
+            <Button className="bg-indigo-500 hover:bg-indigo-600">Browse All Companies</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const initials = company.name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  // Group jobs by level
+  const jobsByLevel: Record<string, typeof jobs> = {};
+  if (jobs) {
+    for (const job of jobs) {
+      if (!jobsByLevel[job.level]) {
+        jobsByLevel[job.level] = [];
+      }
+      jobsByLevel[job.level]!.push(job);
+    }
+  }
+
+  const levelOrder = ['intern', 'new_grad', 'junior', 'mid', 'senior', 'staff', 'principal', 'director', 'vp', 'exec', 'unknown'];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back link */}
-      <Link 
-        href="/companies" 
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to companies
-      </Link>
+    <div className="min-h-screen bg-[#0a0a0f]">
+      <div className="container mx-auto px-4 py-8">
+        {/* Back link */}
+        <Link 
+          href="/companies" 
+          className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to companies
+        </Link>
 
-      {/* Company header */}
-      <Card className="mb-8">
-        <CardContent className="p-6 sm:p-8">
+        {/* Company header */}
+        <div className="p-6 sm:p-8 rounded-xl bg-[#12121a] border border-white/[0.06] mb-8">
           <div className="flex flex-col sm:flex-row gap-6">
             {/* Logo */}
-            <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center text-3xl font-bold text-muted-foreground flex-shrink-0">
-              {company.name.charAt(0)}
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center text-2xl font-bold text-indigo-400 border border-white/[0.06] flex-shrink-0">
+              {initials}
             </div>
 
             {/* Info */}
             <div className="flex-1">
-              <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-2xl sm:text-3xl font-bold">{company.name}</h1>
-                    <TierBadge tier={company.tier} size="lg" />
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white">{company.name}</h1>
+                    <TierBadge tier={company.tier as Tier} size="lg" />
                   </div>
-                  <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-4 text-white/50">
                     <div className="flex items-center gap-1.5">
                       <Globe className="h-4 w-4" />
                       <span>{company.domain}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Briefcase className="h-4 w-4" />
-                      <span>{jobs.length} open {jobs.length === 1 ? 'position' : 'positions'}</span>
+                      <span>{jobs?.length || 0} open {(jobs?.length || 0) === 1 ? 'position' : 'positions'}</span>
                     </div>
                   </div>
                 </div>
@@ -82,47 +125,84 @@ export default async function CompanyDetailPage({ params }: PageProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button variant="outline" className="gap-2">
-                      <Briefcase className="h-4 w-4" />
-                      Careers
-                      <ExternalLink className="h-3 w-3" />
+                    <Button className="bg-white/5 hover:bg-white/10 text-white border border-white/[0.06] gap-2">
+                      <ExternalLink className="h-4 w-4" />
+                      Careers Page
                     </Button>
                   </a>
                 )}
               </div>
-
-              {company.description && (
-                <p className="text-muted-foreground leading-relaxed max-w-2xl">
-                  {company.description}
-                </p>
-              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Jobs */}
-      <div>
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
-          <Building2 className="h-6 w-6 text-amber-500" />
-          Open Positions at {company.name}
-        </h2>
-        
-        {jobs.length > 0 ? (
-          <div className="grid gap-4">
-            {jobs.map(job => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
+        {/* Jobs */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <Building2 className="h-6 w-6 text-indigo-400" />
+            Open Positions
+          </h2>
+          
+          {jobs && jobs.length > 0 ? (
+            <div className="space-y-8">
+              {levelOrder.map(level => {
+                const levelJobs = jobsByLevel[level];
+                if (!levelJobs || levelJobs.length === 0) return null;
+                
+                const levelLabels: Record<string, string> = {
+                  intern: "🎓 Internships",
+                  new_grad: "🚀 New Grad",
+                  junior: "Junior",
+                  mid: "Mid-Level",
+                  senior: "Senior",
+                  staff: "Staff",
+                  principal: "Principal",
+                  director: "Director",
+                  vp: "VP",
+                  exec: "Executive",
+                  unknown: "Other",
+                };
+                
+                return (
+                  <div key={level}>
+                    <h3 className="text-lg font-medium text-white/70 mb-3 flex items-center gap-2">
+                      {levelLabels[level] || level}
+                      <span className="text-sm text-white/40">({levelJobs.length})</span>
+                    </h3>
+                    <div className="grid gap-3">
+                      {levelJobs.map(job => (
+                        <JobCard 
+                          key={job._id} 
+                          job={{
+                            id: job._id,
+                            title: job.title,
+                            company: job.company,
+                            tier: job.tier as Tier,
+                            level: job.level as any,
+                            jobType: job.jobType as any,
+                            location: job.location,
+                            remote: job.remote,
+                            salaryMin: job.salaryMin,
+                            salaryMax: job.salaryMax,
+                            scrapedAt: job.scrapedAt,
+                            score: job.score,
+                          }}
+                          compact
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 rounded-xl bg-[#12121a] border border-white/[0.06] text-center">
+              <p className="text-white/50">
                 No open positions at {company.name} right now. Check back soon!
               </p>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

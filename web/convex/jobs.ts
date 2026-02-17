@@ -273,3 +273,69 @@ export const count = query({
     return jobs.length;
   },
 });
+
+// Count jobs by level (for stats) - uses indexed queries to avoid full table scan
+export const countByLevel = query({
+  handler: async (ctx) => {
+    const levels = ["intern", "new_grad", "junior", "mid", "senior", "staff", "principal", "director", "vp", "exec", "unknown"] as const;
+    
+    const counts: Record<string, number> = {};
+    
+    // Query each level separately using the index - much more efficient
+    for (const level of levels) {
+      const jobs = await ctx.db
+        .query("jobs")
+        .withIndex("by_level", (q) => q.eq("level", level))
+        .collect();
+      counts[level] = jobs.length;
+    }
+    
+    return counts;
+  },
+});
+
+// Get featured/trending jobs (high tier + recent)
+export const featured = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+    
+    // Get jobs from top tiers only using index, limited to avoid 16MB cap
+    const topTiers = ["S+", "S", "S-", "A++", "A+"];
+    const results = [];
+    
+    for (const tier of topTiers) {
+      if (results.length >= limit) break;
+      const jobs = await ctx.db
+        .query("jobs")
+        .withIndex("by_tier", (q) => q.eq("tier", tier))
+        .take(limit - results.length);
+      results.push(...jobs);
+    }
+    
+    return results.slice(0, limit);
+  },
+});
+
+// Get top companies by tier score (uses companies table, not jobs)
+export const topCompanies = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const limit = args.limit ?? 10;
+    
+    // Use companies table which already has jobCount - much more efficient
+    const companies = await ctx.db
+      .query("companies")
+      .withIndex("by_tierScore")
+      .order("desc")
+      .take(limit);
+    
+    return companies.map(c => ({
+      slug: c.slug,
+      company: c.name,
+      tier: c.tier,
+      tierScore: c.tierScore,
+      count: c.jobCount,
+    }));
+  },
+});

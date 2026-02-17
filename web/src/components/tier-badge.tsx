@@ -1,93 +1,124 @@
-import { Tier } from '@/lib/types';
 import { cn } from '@/lib/utils';
-
-const tierConfig: Record<Tier, { bg: string; text: string; border: string; glow?: string }> = {
-  'S+': {
-    bg: 'bg-gradient-to-r from-amber-500 to-yellow-400',
-    text: 'text-black font-bold',
-    border: 'border-amber-400',
-    glow: 'shadow-amber-500/50 shadow-lg',
-  },
-  'S': {
-    bg: 'bg-gradient-to-r from-slate-300 to-slate-200',
-    text: 'text-slate-900 font-bold',
-    border: 'border-slate-300',
-    glow: 'shadow-slate-300/50 shadow-md',
-  },
-  'S-': {
-    bg: 'bg-gradient-to-r from-slate-400 to-slate-300',
-    text: 'text-slate-900 font-semibold',
-    border: 'border-slate-400',
-  },
-  'A++': {
-    bg: 'bg-gradient-to-r from-purple-600 to-violet-500',
-    text: 'text-white font-semibold',
-    border: 'border-purple-400',
-  },
-  'A+': {
-    bg: 'bg-gradient-to-r from-blue-600 to-blue-500',
-    text: 'text-white font-semibold',
-    border: 'border-blue-400',
-  },
-  'A': {
-    bg: 'bg-gradient-to-r from-teal-600 to-teal-500',
-    text: 'text-white font-medium',
-    border: 'border-teal-400',
-  },
-  'A-': {
-    bg: 'bg-gradient-to-r from-teal-500 to-teal-400',
-    text: 'text-white font-medium',
-    border: 'border-teal-300',
-  },
-  'B+': {
-    bg: 'bg-gradient-to-r from-gray-500 to-gray-400',
-    text: 'text-white font-medium',
-    border: 'border-gray-300',
-  },
-  'B': {
-    bg: 'bg-gradient-to-r from-gray-600 to-gray-500',
-    text: 'text-white font-medium',
-    border: 'border-gray-400',
-  },
-  'B-': {
-    bg: 'bg-gradient-to-r from-gray-700 to-gray-600',
-    text: 'text-white font-medium',
-    border: 'border-gray-500',
-  },
-};
+import { Tier } from '@/lib/types';
 
 interface TierBadgeProps {
   tier: Tier;
   size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  showGlow?: boolean;
 }
 
-export function TierBadge({ tier, size = 'md', className }: TierBadgeProps) {
-  const config = tierConfig[tier] ?? {
-    bg: 'bg-gray-500',
-    text: 'text-white',
-    border: 'border-gray-400',
-  };
-  
-  const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-sm px-2 py-0.5',
-    lg: 'text-base px-3 py-1',
-  };
+const tierConfig: Record<Tier, { 
+  gradient: string; 
+  glow: string;
+  textColor: string;
+}> = {
+  'S+': {
+    gradient: 'bg-gradient-to-r from-amber-400 to-yellow-500',
+    glow: 'shadow-amber-500/40',
+    textColor: 'text-black',
+  },
+  'S': {
+    gradient: 'bg-gradient-to-r from-violet-400 to-purple-500',
+    glow: 'shadow-violet-500/40',
+    textColor: 'text-white',
+  },
+  'S-': {
+    gradient: 'bg-gradient-to-r from-violet-400/80 to-purple-500/80',
+    glow: 'shadow-violet-500/30',
+    textColor: 'text-white',
+  },
+  'A++': {
+    gradient: 'bg-gradient-to-r from-blue-400 to-indigo-500',
+    glow: 'shadow-blue-500/40',
+    textColor: 'text-white',
+  },
+  'A+': {
+    gradient: 'bg-gradient-to-r from-blue-400 to-blue-500',
+    glow: 'shadow-blue-500/30',
+    textColor: 'text-white',
+  },
+  'A': {
+    gradient: 'bg-gradient-to-r from-sky-400 to-blue-500',
+    glow: 'shadow-sky-500/30',
+    textColor: 'text-white',
+  },
+  'A-': {
+    gradient: 'bg-gradient-to-r from-sky-400/80 to-blue-500/80',
+    glow: 'shadow-sky-500/25',
+    textColor: 'text-white',
+  },
+  'B+': {
+    gradient: 'bg-gradient-to-r from-emerald-400 to-green-500',
+    glow: 'shadow-emerald-500/30',
+    textColor: 'text-white',
+  },
+  'B': {
+    gradient: 'bg-gradient-to-r from-green-400 to-emerald-500',
+    glow: 'shadow-green-500/25',
+    textColor: 'text-white',
+  },
+  'B-': {
+    gradient: 'bg-gradient-to-r from-green-400/80 to-emerald-500/80',
+    glow: 'shadow-green-500/20',
+    textColor: 'text-white',
+  },
+};
 
+const sizeClasses = {
+  sm: 'px-2 py-0.5 text-xs font-semibold',
+  md: 'px-2.5 py-1 text-sm font-bold',
+  lg: 'px-3 py-1.5 text-base font-bold',
+};
+
+export function TierBadge({ tier, size = 'md', showGlow = true }: TierBadgeProps) {
+  const config = tierConfig[tier] || tierConfig['B'];
+  
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md border',
-        config.bg,
-        config.text,
-        config.border,
-        config.glow,
+        'inline-flex items-center rounded-md tracking-tight',
+        config.gradient,
+        config.textColor,
         sizeClasses[size],
-        className
+        showGlow && `shadow-lg ${config.glow}`
       )}
     >
       {tier}
+    </span>
+  );
+}
+
+// Score badge component
+interface ScoreBadgeProps {
+  score: number;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function ScoreBadge({ score, size = 'md' }: ScoreBadgeProps) {
+  const getScoreColor = (s: number) => {
+    if (s >= 95) return 'from-amber-400 to-yellow-500 shadow-amber-500/40';
+    if (s >= 85) return 'from-violet-400 to-purple-500 shadow-violet-500/40';
+    if (s >= 75) return 'from-blue-400 to-indigo-500 shadow-blue-500/40';
+    if (s >= 65) return 'from-emerald-400 to-green-500 shadow-emerald-500/30';
+    return 'from-gray-400 to-gray-500 shadow-gray-500/20';
+  };
+  
+  const sizeMap = {
+    sm: 'text-xs px-2 py-0.5',
+    md: 'text-sm px-2.5 py-1',
+    lg: 'text-base px-3 py-1.5',
+  };
+  
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full font-bold text-white shadow-lg',
+        'bg-gradient-to-r',
+        getScoreColor(score),
+        sizeMap[size]
+      )}
+    >
+      {score}
     </span>
   );
 }

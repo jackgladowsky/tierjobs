@@ -1,0 +1,28 @@
+name = "tierjobs-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "tierjobs"
+database_id = "84b9e785-4081-461f-9a93-3b10a582c94a"
+
+# Workers AI
+[ai]
+binding = "AI"
+
+# KV for caching
+[[kv_namespaces]]
+binding = "CACHE"
+id = "0d26ac74170a47089d7d129a23a752b8"
+
+# Durable Objects for user sessions
+[[durable_objects.bindings]]
+name = "USER_SESSION"
+class_name = "UserSession"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["UserSession"]

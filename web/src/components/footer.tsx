@@ -1,82 +1,91 @@
 import Link from 'next/link';
-import { Trophy } from 'lucide-react';
+import { Sparkles, Github, Twitter } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/30">
+    <footer className="border-t border-white/[0.06] bg-[#08080c]">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid gap-8 md:grid-cols-4">
           {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-400">
-                <Trophy className="h-5 w-5 text-black" />
+          <div className="md:col-span-2">
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500">
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-xl">
-                Tier<span className="text-amber-500">Jobs</span>
+              <span className="font-bold text-xl text-white">
+                Tier<span className="text-indigo-400">Jobs</span>
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Find your next role at top-tier tech companies. Jobs ranked by company prestige and compensation.
+            <p className="text-sm text-white/40 max-w-xs leading-relaxed">
+              Find your dream role at elite tech companies. Every company ranked, every opportunity scored.
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="font-semibold mb-3">Browse</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="font-semibold text-white mb-4">Explore</h4>
+            <ul className="space-y-2">
               <li>
-                <Link href="/jobs" className="hover:text-foreground transition-colors">
-                  All Jobs
+                <Link href="/jobs" className="text-sm text-white/50 hover:text-white transition-colors">
+                  Browse Jobs
                 </Link>
               </li>
               <li>
-                <Link href="/companies" className="hover:text-foreground transition-colors">
+                <Link href="/companies" className="text-sm text-white/50 hover:text-white transition-colors">
                   Companies
                 </Link>
               </li>
               <li>
-                <Link href="/jobs?tier=S+" className="hover:text-foreground transition-colors">
-                  S+ Tier Jobs
+                <Link href="/tier-list" className="text-sm text-white/50 hover:text-white transition-colors">
+                  Tier List Maker
                 </Link>
               </li>
               <li>
-                <Link href="/jobs?remote=Remote" className="hover:text-foreground transition-colors">
-                  Remote Jobs
+                <Link href="/jobs?level=intern" className="text-sm text-white/50 hover:text-white transition-colors">
+                  Internships
+                </Link>
+              </li>
+              <li>
+                <Link href="/jobs?level=new_grad" className="text-sm text-white/50 hover:text-white transition-colors">
+                  New Grad Roles
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-3">Company</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h4 className="font-semibold text-white mb-4">Resources</h4>
+            <ul className="space-y-2">
               <li>
-                <Link href="#" className="hover:text-foreground transition-colors">
+                <Link href="/about" className="text-sm text-white/50 hover:text-white transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground transition-colors">
-                  Blog
-                </Link>
+                <a href="https://twitter.com/tierjobs" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors flex items-center gap-1">
+                  <Twitter className="h-3.5 w-3.5" />
+                  Twitter
+                </a>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground transition-colors">
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-foreground transition-colors">
-                  Terms
-                </Link>
+                <a href="https://github.com/jackgladowsky/tierjobs" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors flex items-center gap-1">
+                  <Github className="h-3.5 w-3.5" />
+                  GitHub
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} TierJobs. All rights reserved.</p>
+        {/* Bottom */}
+        <div className="mt-12 pt-8 border-t border-white/[0.06] flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-white/30">
+            © {new Date().getFullYear()} TierJobs. Built by Jack Gladowsky.
+          </p>
+          <p className="text-xs text-white/30">
+            Data refreshed daily. Not affiliated with listed companies.
+          </p>
         </div>
       </div>
     </footer>

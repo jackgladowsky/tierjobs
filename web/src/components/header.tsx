@@ -1,53 +1,115 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Trophy, Briefcase, Building2, Menu } from 'lucide-react';
+import { Briefcase, Building2, Menu, X, Layers, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export function Header() {
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { href: '/jobs', label: 'Jobs', icon: Briefcase },
+    { href: '/companies', label: 'Companies', icon: Building2 },
+    { href: '/tier-list', label: 'Tier List', icon: Layers },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0f]/80 backdrop-blur-xl">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-yellow-400">
-              <Trophy className="h-5 w-5 text-black" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/25">
+              <Sparkles className="h-5 w-5 text-white" />
+              <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <span className="font-bold text-xl">
-              Tier<span className="text-amber-500">Jobs</span>
+            <span className="font-bold text-xl text-white">
+              Tier<span className="text-indigo-400">Jobs</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/jobs"
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Briefcase className="h-4 w-4" />
-              Jobs
-            </Link>
-            <Link
-              href="/companies"
-              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Building2 className="h-4 w-4" />
-              Companies
-            </Link>
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map(({ href, label, icon: Icon }) => {
+              const isActive = pathname === href || pathname.startsWith(href + '/');
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                    isActive
+                      ? 'bg-white/10 text-white'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" className="hidden sm:flex">
-              Sign In
-            </Button>
-            <Button size="sm" className="hidden sm:flex bg-gradient-to-r from-amber-500 to-yellow-400 text-black hover:from-amber-600 hover:to-yellow-500">
-              Post a Job
-            </Button>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
+            <Link href="/jobs?level=intern" className="hidden lg:block">
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white shadow-lg shadow-indigo-500/20"
+              >
+                Find Jobs
+              </Button>
+            </Link>
+            
+            {/* Mobile menu button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden text-white/60 hover:text-white hover:bg-white/5"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-white/[0.06]">
+            <nav className="flex flex-col gap-1">
+              {navLinks.map(({ href, label, icon: Icon }) => {
+                const isActive = pathname === href || pathname.startsWith(href + '/');
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all',
+                      isActive
+                        ? 'bg-white/10 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                  </Link>
+                );
+              })}
+              <Link href="/jobs?level=intern" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  className="w-full mt-2 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white"
+                >
+                  Find Jobs
+                </Button>
+              </Link>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

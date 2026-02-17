@@ -143,3 +143,40 @@ export const stats = query({
     };
   },
 });
+
+// Get aggregated stats including level counts (lightweight - uses sampling)
+export const fullStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const companies = await ctx.db.query("companies").collect();
+    
+    const byTier: Record<string, number> = {};
+    let totalJobs = 0;
+    
+    for (const c of companies) {
+      byTier[c.tier] = (byTier[c.tier] || 0) + 1;
+      totalJobs += c.jobCount;
+    }
+    
+    // For level counts, sample from high-tier companies to estimate
+    // This avoids the 16MB limit while giving reasonable estimates
+    const levels = ["intern", "new_grad"] as const;
+    const levelCounts: Record<string, number> = { intern: 0, new_grad: 0 };
+    
+    for (const level of levels) {
+      // Use take() to limit documents loaded
+      const jobs = await ctx.db
+        .query("jobs")
+        .withIndex("by_level", (q) => q.eq("level", level))
+        .take(5000); // Safe limit under 16MB
+      levelCounts[level] = jobs.length;
+    }
+    
+    return {
+      totalCompanies: companies.length,
+      totalJobs,
+      byTier,
+      levelCounts,
+    };
+  },
+});
