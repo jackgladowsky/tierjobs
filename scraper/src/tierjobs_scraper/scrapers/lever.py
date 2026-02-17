@@ -6,7 +6,7 @@ They have a public API at: https://api.lever.co/v0/postings/{company}
 
 from datetime import datetime
 from .base import APIBasedScraper
-from ..models import Job, Company, JobLevel, JobType
+from ..models import Job, Company
 
 
 # Map company slugs to their Lever site names
@@ -48,15 +48,6 @@ class LeverScraper(APIBasedScraper):
             # Extract location
             location = data.get("categories", {}).get("location")
 
-            # Check if remote
-            remote = False
-            if location and "remote" in location.lower():
-                remote = True
-
-            # Infer level and type
-            level = self.infer_level(title)
-            job_type = self.infer_job_type(title)
-
             # Get team/department
             team = data.get("categories", {}).get("team")
 
@@ -72,14 +63,12 @@ class LeverScraper(APIBasedScraper):
                 except Exception:
                     pass
 
+            # create_job auto-infers job_type, level, and normalizes location
             return self.create_job(
                 id=self.make_job_id(job_id),
                 title=title,
                 url=url,
                 location=location,
-                remote=remote,
-                level=level,
-                job_type=job_type,
                 team=team,
                 description=description[:500] if description else None,
                 posted_at=posted_at,
@@ -87,53 +76,3 @@ class LeverScraper(APIBasedScraper):
         except Exception as e:
             print(f"Error parsing job: {e}")
             return None
-    
-    def infer_level(self, title: str) -> JobLevel:
-        """Infer job level from title."""
-        title_lower = title.lower()
-        
-        if "intern" in title_lower:
-            return JobLevel.INTERN
-        elif "new grad" in title_lower or "entry" in title_lower:
-            return JobLevel.NEW_GRAD
-        elif "junior" in title_lower or "jr" in title_lower:
-            return JobLevel.JUNIOR
-        elif "senior" in title_lower or "sr" in title_lower:
-            return JobLevel.SENIOR
-        elif "staff" in title_lower:
-            return JobLevel.STAFF
-        elif "principal" in title_lower:
-            return JobLevel.PRINCIPAL
-        elif "director" in title_lower:
-            return JobLevel.DIRECTOR
-        elif "vp" in title_lower or "vice president" in title_lower:
-            return JobLevel.VP
-        elif any(x in title_lower for x in ["cto", "ceo", "chief"]):
-            return JobLevel.EXEC
-        else:
-            return JobLevel.MID
-    
-    def infer_job_type(self, title: str) -> JobType:
-        """Infer job type from title."""
-        title_lower = title.lower()
-        
-        if any(x in title_lower for x in ["machine learning", "ml ", "ai ", "deep learning"]):
-            return JobType.ML_ENGINEER
-        elif any(x in title_lower for x in ["data scientist", "data science"]):
-            return JobType.DATA_SCIENTIST
-        elif any(x in title_lower for x in ["quant", "quantitative"]):
-            return JobType.QUANT
-        elif any(x in title_lower for x in ["product manager", "pm", "product lead"]):
-            return JobType.PRODUCT_MANAGER
-        elif any(x in title_lower for x in ["design", "ux", "ui"]):
-            return JobType.DESIGNER
-        elif any(x in title_lower for x in ["devops", "sre", "infrastructure", "platform"]):
-            return JobType.DEVOPS
-        elif any(x in title_lower for x in ["security", "infosec"]):
-            return JobType.SECURITY
-        elif any(x in title_lower for x in ["research", "researcher"]):
-            return JobType.RESEARCH
-        elif any(x in title_lower for x in ["software", "engineer", "developer", "backend", "frontend", "fullstack"]):
-            return JobType.SOFTWARE_ENGINEER
-        else:
-            return JobType.OTHER

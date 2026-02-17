@@ -44,7 +44,12 @@ class Job(BaseModel):
     title: str
     url: str
     location: str | None = None
+    location_normalized: str | None = None  # Normalized city name
     remote: bool = False
+    
+    # Classification
+    job_type: str = "other"  # swe, mle, ds, pm, design, etc.
+    level: str = "unknown"  # intern, new_grad, junior, mid, senior, staff, etc.
     
     # Raw fields from API
     team: str | None = None  # departments[0].name

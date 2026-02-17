@@ -11,6 +11,8 @@ from playwright.async_api import async_playwright, Page
 from bs4 import BeautifulSoup
 
 from ..models import Job, Company, ScrapeResult
+from ..classification import infer_job_type, infer_level
+from ..location import normalize_location, extract_remote_info
 
 
 class BaseScraper(ABC):
@@ -55,7 +57,33 @@ class BaseScraper(ABC):
         return f"{self.company.slug}_{job_id}"
     
     def create_job(self, **kwargs) -> Job:
-        """Create a job with company info pre-filled."""
+        """Create a job with company info pre-filled.
+        
+        Automatically infers job_type, level, and normalizes location
+        if not explicitly provided.
+        """
+        title = kwargs.get("title", "")
+        team = kwargs.get("team")
+        location = kwargs.get("location")
+        
+        # Auto-infer job type if not provided
+        if "job_type" not in kwargs:
+            kwargs["job_type"] = infer_job_type(title, team)
+        
+        # Auto-infer level if not provided
+        if "level" not in kwargs:
+            kwargs["level"] = infer_level(title)
+        
+        # Normalize location
+        if location and "location_normalized" not in kwargs:
+            kwargs["location_normalized"] = normalize_location(location)
+        
+        # Check for remote status
+        if location and not kwargs.get("remote"):
+            is_remote, _ = extract_remote_info(location)
+            if is_remote:
+                kwargs["remote"] = True
+        
         return Job(
             company=self.company.name,
             company_slug=self.company.slug,
