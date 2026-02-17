@@ -175,13 +175,17 @@ export default function CompanyDetailPage({ params }: PageProps) {
                           key={job._id} 
                           job={{
                             id: job._id,
+                            jobId: job.jobId,
                             title: job.title,
                             company: job.company,
+                            companySlug: job.companySlug,
                             tier: job.tier as Tier,
+                            tierScore: job.tierScore,
                             level: job.level as any,
                             jobType: job.jobType as any,
                             location: job.location,
                             remote: job.remote,
+                            url: job.url,
                             salaryMin: job.salaryMin,
                             salaryMax: job.salaryMax,
                             scrapedAt: job.scrapedAt,

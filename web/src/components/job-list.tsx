@@ -19,9 +19,7 @@ export function JobList({ jobs, showFilters = true, itemsPerPage = 10 }: JobList
     search: '',
     tier: '',
     level: '',
-    type: '',
-    remote: '',
-    location: '',
+    jobType: '',
   });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [page, setPage] = useState(1);
@@ -38,9 +36,7 @@ export function JobList({ jobs, showFilters = true, itemsPerPage = 10 }: JobList
       }
       if (filters.tier && job.tier !== filters.tier) return false;
       if (filters.level && job.level !== filters.level) return false;
-      if (filters.type && job.jobType !== filters.type) return false;
-      if (filters.remote !== '' && String(job.remote) !== filters.remote) return false;
-      if (filters.location && job.location !== filters.location) return false;
+      if (filters.jobType && job.jobType !== filters.jobType) return false;
       return true;
     });
   }, [jobs, filters]);
@@ -91,7 +87,7 @@ export function JobList({ jobs, showFilters = true, itemsPerPage = 10 }: JobList
           )}
         >
           {paginatedJobs.map(job => (
-            <JobCard key={job.id} job={job} featured={job.featured} />
+            <JobCard key={job.id} job={job} />
           ))}
         </div>
       ) : (

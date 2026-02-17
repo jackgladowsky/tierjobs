@@ -6,7 +6,7 @@ import { JobCard } from './job-card';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { Loader2, Search, Briefcase } from 'lucide-react';
-import { Job, Tier } from '@/lib/types';
+import { Job, Tier, JobLevel, JobType } from '@/lib/types';
 
 interface JobListLiveProps {
   tier?: string;
@@ -23,7 +23,11 @@ export function JobListLive({
 }: JobListLiveProps) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.jobs.listPaginated,
-    { tier, level, jobType },
+    { 
+      tier: tier || undefined, 
+      level: level as JobLevel | undefined, 
+      jobType: jobType as JobType | undefined
+    },
     { initialNumItems: pageSize }
   );
 
