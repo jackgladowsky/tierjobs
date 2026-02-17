@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+from datetime import datetime
 from pathlib import Path
 
 import click
@@ -13,6 +14,7 @@ from .models import Company
 from .scrapers import GreenhouseScraper, LeverScraper
 from .scrapers.greenhouse import GREENHOUSE_BOARDS
 from .scrapers.lever import LEVER_SITES
+from .convex_client import AsyncConvexClient
 
 
 console = Console()
@@ -94,7 +96,8 @@ def companies():
 @main.command()
 @click.argument("company_slug")
 @click.option("--output", "-o", type=click.Path(), help="Output JSON file")
-def scrape(company_slug: str, output: str | None):
+@click.option("--push", is_flag=True, help="Push jobs to Convex database")
+def scrape(company_slug: str, output: str | None, push: bool):
     """Scrape jobs from a specific company."""
     all_companies = load_companies()
     
@@ -137,6 +140,29 @@ def scrape(company_slug: str, output: str | None):
             if len(jobs) > 20:
                 console.print(f"... and {len(jobs) - 20} more")
         
+        # Push to Convex
+        if push and jobs:
+            async def push_to_convex():
+                async with AsyncConvexClient() as client:
+                    # Check health
+                    if not await client.health_check():
+                        console.print("[red]✗[/red] Convex unreachable")
+                        return False
+                    
+                    # Bulk upsert jobs
+                    result = await client.bulk_upsert_jobs(jobs)
+                    console.print(f"[green]✓[/green] Pushed to Convex: {result['created']} created, {result['updated']} updated")
+                    
+                    # Update company job count
+                    await client.update_company_job_count(
+                        company.slug,
+                        len(jobs),
+                        datetime.utcnow()
+                    )
+                    return True
+            
+            asyncio.run(push_to_convex())
+        
         if output:
             with open(output, "w") as f:
                 json.dump([job.model_dump() for job in jobs], f, indent=2, default=str)
@@ -148,7 +174,8 @@ def scrape(company_slug: str, output: str | None):
 @main.command()
 @click.option("--output", "-o", type=click.Path(), default="jobs.json", help="Output JSON file")
 @click.option("--tiers", "-t", multiple=True, help="Only scrape specific tiers (e.g., -t S+ -t S)")
-def scrape_all(output: str, tiers: tuple[str]):
+@click.option("--push", is_flag=True, help="Push jobs to Convex database")
+def scrape_all(output: str, tiers: tuple[str], push: bool):
     """Scrape jobs from all companies."""
     all_companies = load_companies()
     
@@ -160,6 +187,7 @@ def scrape_all(output: str, tiers: tuple[str]):
     
     all_jobs = []
     results = []
+    company_job_counts: dict[str, int] = {}
     
     async def run_all():
         for slug, company in all_companies.items():
@@ -172,6 +200,7 @@ def scrape_all(output: str, tiers: tuple[str]):
                 if result.success:
                     console.print(f"[green]{result.jobs_found} jobs[/green]")
                     all_jobs.extend(scraper.jobs)
+                    company_job_counts[slug] = result.jobs_found
                 else:
                     console.print(f"[red]failed: {result.error}[/red]")
             except Exception as e:
@@ -185,6 +214,38 @@ def scrape_all(output: str, tiers: tuple[str]):
     
     console.print(f"\n[green]✓[/green] Scraped {successful}/{len(results)} companies")
     console.print(f"[green]✓[/green] Found {total_jobs} total jobs")
+    
+    # Push to Convex
+    if push and all_jobs:
+        async def push_to_convex():
+            async with AsyncConvexClient() as client:
+                # Check health
+                if not await client.health_check():
+                    console.print("[red]✗[/red] Convex unreachable")
+                    return
+                
+                # Bulk upsert jobs in batches of 100
+                batch_size = 100
+                created = 0
+                updated = 0
+                
+                for i in range(0, len(all_jobs), batch_size):
+                    batch = all_jobs[i:i + batch_size]
+                    result = await client.bulk_upsert_jobs(batch)
+                    created += result.get("created", 0)
+                    updated += result.get("updated", 0)
+                    console.print(f"  Pushed batch {i // batch_size + 1}...")
+                
+                console.print(f"[green]✓[/green] Pushed to Convex: {created} created, {updated} updated")
+                
+                # Update company job counts
+                now = datetime.utcnow()
+                for slug, count in company_job_counts.items():
+                    await client.update_company_job_count(slug, count, now)
+                
+                console.print(f"[green]✓[/green] Updated {len(company_job_counts)} company job counts")
+        
+        asyncio.run(push_to_convex())
     
     # Save
     with open(output, "w") as f:
