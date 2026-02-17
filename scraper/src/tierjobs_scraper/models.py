@@ -46,23 +46,18 @@ class Job(BaseModel):
     location: str | None = None
     remote: bool = False
     
-    # Inferred fields (not from API)
-    level: JobLevel = JobLevel.UNKNOWN
-    job_type: JobType = JobType.OTHER
-    
     # Raw fields from API
     team: str | None = None  # departments[0].name
     departments: list[str] = Field(default_factory=list)  # All department names
     offices: list[str] = Field(default_factory=list)  # Office locations
     
-    description: str | None = None  # Full HTML content
+    description_html: str | None = None  # Full HTML content
+    description: str | None = None  # Clean text (parsed from HTML)
     metadata: dict = Field(default_factory=dict)  # Raw metadata from API
-    
-    requirements: list[str] = Field(default_factory=list)
     
     salary_min: int | None = None
     salary_max: int | None = None
-    equity: bool | None = None
+    salary_currency: str | None = None
     
     # Dates
     posted_at: datetime | None = None  # first_published

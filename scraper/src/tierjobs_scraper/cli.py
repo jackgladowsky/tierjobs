@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from .models import Company, JobType
+from .models import Company
 from .scrapers import GreenhouseScraper, LeverScraper
 from .scrapers.greenhouse import GREENHOUSE_BOARDS
 from .scrapers.lever import LEVER_SITES
@@ -97,10 +97,9 @@ def companies():
 @click.argument("company_slug")
 @click.option("--output", "-o", type=click.Path(), help="Output JSON file")
 @click.option("--push", is_flag=True, help="Push jobs to Convex database")
-@click.option("--roles", "-r", multiple=True, help="Filter by job type (e.g., -r swe -r mle). Options: swe, mle, ds, quant, pm, design, devops, security, research, other")
 @click.option("--full", is_flag=True, help="Fetch full job details including description (slower)")
 @click.option("--full-id", type=str, help="Fetch full details for a single job ID (for testing)")
-def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str], full: bool, full_id: str | None):
+def scrape(company_slug: str, output: str | None, push: bool, full: bool, full_id: str | None):
     """Scrape jobs from a specific company."""
     all_companies = load_companies()
 
@@ -108,15 +107,6 @@ def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str],
         console.print(f"[red]Unknown company: {company_slug}[/red]")
         console.print("Run 'tierjobs companies' to see available companies")
         return
-
-    # Validate roles
-    if roles:
-        valid_roles = {jt.value for jt in JobType}
-        invalid_roles = [r for r in roles if r not in valid_roles]
-        if invalid_roles:
-            console.print(f"[red]Invalid role(s): {', '.join(invalid_roles)}[/red]")
-            console.print(f"Valid roles: {', '.join(sorted(valid_roles))}")
-            return
 
     company = all_companies[company_slug]
     
@@ -151,8 +141,6 @@ def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str],
 
     mode_msg = " [yellow](full mode - fetching descriptions)[/yellow]" if full else ""
     console.print(f"Scraping [cyan]{company.name}[/cyan] ({company.tier}){mode_msg}...")
-    if roles:
-        console.print(f"Filtering for roles: {', '.join(roles)}")
 
     async def run():
         result = await scraper.run()
@@ -160,27 +148,25 @@ def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str],
 
     result, jobs = asyncio.run(run())
 
-    # Apply role filter
-    if roles and jobs:
-        jobs = [job for job in jobs if job.job_type in roles]
-
     if result.success:
-        filter_msg = f" ({len(jobs)} after filtering)" if roles and len(jobs) != result.jobs_found else ""
-        console.print(f"[green]✓[/green] Found {result.jobs_found} jobs{filter_msg} in {result.duration_ms}ms")
+        console.print(f"[green]✓[/green] Found {result.jobs_found} jobs in {result.duration_ms}ms")
         
         if jobs:
             table = Table(title=f"Jobs at {company.name}")
             table.add_column("Title", style="white", max_width=50)
-            table.add_column("Level", style="cyan")
-            table.add_column("Type", style="green")
+            table.add_column("Team", style="cyan")
             table.add_column("Location", style="dim")
+            table.add_column("Salary", style="green")
             
             for job in jobs[:20]:  # Show first 20
+                salary = ""
+                if job.salary_min and job.salary_max:
+                    salary = f"${job.salary_min//1000}k-${job.salary_max//1000}k"
                 table.add_row(
                     job.title[:50],
-                    job.level,
-                    job.job_type,
+                    job.team or "—",
                     job.location or "N/A",
+                    salary or "—",
                 )
             
             console.print(table)

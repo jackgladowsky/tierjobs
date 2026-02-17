@@ -4,9 +4,12 @@ Many companies use Greenhouse (boards.greenhouse.io).
 They have a public JSON API at: https://boards-api.greenhouse.io/v1/boards/{company}/jobs
 """
 
+import re
+import html
 from datetime import datetime
+from bs4 import BeautifulSoup
 from .base import APIBasedScraper
-from ..models import Job, Company, JobLevel, JobType
+from ..models import Job, Company
 
 
 # Map company slugs to their Greenhouse board names
@@ -83,6 +86,58 @@ class GreenhouseScraper(APIBasedScraper):
         """Fetch a single job by ID (for --full-id testing)."""
         return await self.fetch_full_job(job_id)
     
+    def parse_html_content(self, html_content: str) -> str:
+        """Parse HTML and return clean text."""
+        # First decode HTML entities (&lt; -> <, etc.)
+        decoded = html.unescape(html_content)
+        # Parse with BeautifulSoup
+        soup = BeautifulSoup(decoded, "html.parser")
+        # Get text with newlines preserved
+        text = soup.get_text(separator="\n", strip=True)
+        # Clean up multiple newlines
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        return text
+    
+    def extract_salary(self, html: str) -> tuple[int | None, int | None, str | None]:
+        """Extract salary range from HTML content."""
+        # First, find all dollar amounts in the HTML
+        # Pattern to find $xxx,xxx values (may be wrapped in HTML tags)
+        dollar_pattern = r'\$([0-9,]+)'
+        amounts = re.findall(dollar_pattern, html)
+        
+        if len(amounts) >= 2:
+            # Take the first two amounts as min/max (common pattern for salary ranges)
+            try:
+                # Filter to reasonable salary amounts (> $10k, < $10M)
+                valid_amounts = []
+                for amt in amounts:
+                    val = int(amt.replace(',', ''))
+                    if 10000 <= val <= 10000000:
+                        valid_amounts.append(val)
+                
+                if len(valid_amounts) >= 2:
+                    salary_min = valid_amounts[0]
+                    salary_max = valid_amounts[1]
+                    
+                    # Ensure min < max
+                    if salary_min > salary_max:
+                        salary_min, salary_max = salary_max, salary_min
+                    
+                    # Check for currency (default USD)
+                    currency = "USD"
+                    if "CAD" in html:
+                        currency = "CAD"
+                    elif "EUR" in html or "€" in html:
+                        currency = "EUR"
+                    elif "GBP" in html or "£" in html:
+                        currency = "GBP"
+                    
+                    return salary_min, salary_max, currency
+            except (ValueError, IndexError):
+                pass
+        
+        return None, None, None
+    
     def parse_job(self, data: dict, full: bool = False) -> Job | None:
         """Parse a job from Greenhouse API response."""
         try:
@@ -99,10 +154,6 @@ class GreenhouseScraper(APIBasedScraper):
             remote = False
             if location and "remote" in location.lower():
                 remote = True
-
-            # Inferred fields (not from API)
-            level = self.infer_level(title)
-            job_type = self.infer_job_type(title)
 
             # Raw fields - departments (full mode only)
             team = None
@@ -125,9 +176,16 @@ class GreenhouseScraper(APIBasedScraper):
                         metadata[m["name"]] = m["value"]
 
             # Raw fields - description (full mode only)
+            description_html = None
             description = None
+            salary_min = None
+            salary_max = None
+            salary_currency = None
+            
             if full and data.get("content"):
-                description = data["content"]
+                description_html = data["content"]
+                description = self.parse_html_content(description_html)
+                salary_min, salary_max, salary_currency = self.extract_salary(description_html)
 
             # Raw fields - dates
             posted_at = None
@@ -154,13 +212,15 @@ class GreenhouseScraper(APIBasedScraper):
                 url=url,
                 location=location,
                 remote=remote,
-                level=level,
-                job_type=job_type,
                 team=team,
                 departments=departments,
                 offices=offices,
                 metadata=metadata,
+                description_html=description_html,
                 description=description,
+                salary_min=salary_min,
+                salary_max=salary_max,
+                salary_currency=salary_currency,
                 posted_at=posted_at,
                 updated_at=updated_at,
                 internal_job_id=internal_job_id,
@@ -169,53 +229,3 @@ class GreenhouseScraper(APIBasedScraper):
         except Exception as e:
             print(f"Error parsing job: {e}")
             return None
-    
-    def infer_level(self, title: str) -> JobLevel:
-        """Infer job level from title."""
-        title_lower = title.lower()
-        
-        if "intern" in title_lower:
-            return JobLevel.INTERN
-        elif "new grad" in title_lower or "entry" in title_lower:
-            return JobLevel.NEW_GRAD
-        elif "junior" in title_lower or "jr" in title_lower:
-            return JobLevel.JUNIOR
-        elif "senior" in title_lower or "sr" in title_lower:
-            return JobLevel.SENIOR
-        elif "staff" in title_lower:
-            return JobLevel.STAFF
-        elif "principal" in title_lower:
-            return JobLevel.PRINCIPAL
-        elif "director" in title_lower:
-            return JobLevel.DIRECTOR
-        elif "vp" in title_lower or "vice president" in title_lower:
-            return JobLevel.VP
-        elif any(x in title_lower for x in ["cto", "ceo", "chief"]):
-            return JobLevel.EXEC
-        else:
-            return JobLevel.MID  # Default to mid
-    
-    def infer_job_type(self, title: str) -> JobType:
-        """Infer job type from title."""
-        title_lower = title.lower()
-        
-        if any(x in title_lower for x in ["machine learning", "ml ", "ai ", "deep learning"]):
-            return JobType.ML_ENGINEER
-        elif any(x in title_lower for x in ["data scientist", "data science"]):
-            return JobType.DATA_SCIENTIST
-        elif any(x in title_lower for x in ["quant", "quantitative"]):
-            return JobType.QUANT
-        elif any(x in title_lower for x in ["product manager", "pm", "product lead"]):
-            return JobType.PRODUCT_MANAGER
-        elif any(x in title_lower for x in ["design", "ux", "ui"]):
-            return JobType.DESIGNER
-        elif any(x in title_lower for x in ["devops", "sre", "infrastructure", "platform"]):
-            return JobType.DEVOPS
-        elif any(x in title_lower for x in ["security", "infosec"]):
-            return JobType.SECURITY
-        elif any(x in title_lower for x in ["research", "researcher"]):
-            return JobType.RESEARCH
-        elif any(x in title_lower for x in ["software", "engineer", "developer", "backend", "frontend", "fullstack"]):
-            return JobType.SOFTWARE_ENGINEER
-        else:
-            return JobType.OTHER
