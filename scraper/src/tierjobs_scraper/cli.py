@@ -295,7 +295,8 @@ def scrape(company_slug: str, output: str | None, roles: tuple[str, ...], push: 
 @click.option("--tier", "-t", "tiers", multiple=True, help="Only scrape specific tiers (e.g., -t S+ -t S)")
 @click.option("--role", "-r", "roles", multiple=True, help=f"Filter by role type ({ROLE_HELP})")
 @click.option("--push", is_flag=True, help="Push jobs to Convex database")
-def scrape_all(output: str, tiers: tuple[str, ...], roles: tuple[str, ...], push: bool):
+@click.option("--full", is_flag=True, help="Fetch full job details including description (slower)")
+def scrape_all(output: str, tiers: tuple[str, ...], roles: tuple[str, ...], push: bool, full: bool):
     """Scrape jobs from all companies.
     
     Examples:
@@ -305,6 +306,8 @@ def scrape_all(output: str, tiers: tuple[str, ...], roles: tuple[str, ...], push
         tierjobs scrape-all --tier S+ --tier S
         
         tierjobs scrape-all --role swe --role mle --push
+        
+        tierjobs scrape-all --full --push  # Get full descriptions
     """
     all_companies = load_companies()
 
@@ -317,7 +320,8 @@ def scrape_all(output: str, tiers: tuple[str, ...], roles: tuple[str, ...], push
     if tiers:
         all_companies = {k: v for k, v in all_companies.items() if v.tier in tiers}
 
-    console.print(f"Scraping {len(all_companies)} companies...")
+    mode_msg = " [yellow](full mode)[/yellow]" if full else ""
+    console.print(f"Scraping {len(all_companies)} companies...{mode_msg}")
     if role_filters:
         console.print(f"Filtering for roles: {', '.join(role_filters)}")
     
@@ -328,7 +332,7 @@ def scrape_all(output: str, tiers: tuple[str, ...], roles: tuple[str, ...], push
     async def run_all():
         for slug, company in all_companies.items():
             try:
-                scraper = get_scraper(company)
+                scraper = get_scraper(company, full=full)
                 console.print(f"  Scraping [cyan]{company.name}[/cyan]...", end=" ")
                 result = await scraper.run()
                 results.append(result)
