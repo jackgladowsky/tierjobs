@@ -11,18 +11,22 @@ interface JobCardProps {
   featured?: boolean;
 }
 
-function formatSalary(salary: Job['salary']) {
-  if (!salary) return null;
+function formatSalary(min?: number, max?: number) {
+  if (!min && !max) return null;
   const format = (n: number) => {
-    if (n >= 1000) return `${(n / 1000).toFixed(0)}k`;
-    return n.toString();
+    if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`;
+    return `$${n}`;
   };
-  return `${salary.currency === 'USD' ? '$' : '€'}${format(salary.min)} - ${format(salary.max)}`;
+  if (min && max) return `${format(min)} - ${format(max)}`;
+  if (min) return `${format(min)}+`;
+  if (max) return `Up to ${format(max)}`;
+  return null;
 }
 
-function timeAgo(date: Date) {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
+function timeAgo(timestamp?: number) {
+  if (!timestamp) return 'Recently';
+  const now = Date.now();
+  const diff = now - timestamp;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   if (days === 0) return 'Today';
   if (days === 1) return 'Yesterday';
@@ -31,7 +35,36 @@ function timeAgo(date: Date) {
   return `${Math.floor(days / 30)} months ago`;
 }
 
+const levelLabels: Record<string, string> = {
+  intern: "Intern",
+  new_grad: "New Grad",
+  junior: "Junior",
+  mid: "Mid-Level",
+  senior: "Senior",
+  staff: "Staff",
+  principal: "Principal",
+  director: "Director",
+  vp: "VP",
+  exec: "Executive",
+  unknown: "Unknown",
+};
+
+const typeLabels: Record<string, string> = {
+  swe: "Software Engineer",
+  mle: "ML Engineer",
+  ds: "Data Scientist",
+  quant: "Quant",
+  pm: "Product Manager",
+  design: "Designer",
+  devops: "DevOps",
+  security: "Security",
+  research: "Research",
+  other: "Other",
+};
+
 export function JobCard({ job, featured }: JobCardProps) {
+  const salary = formatSalary(job.salaryMin, job.salaryMax);
+  
   return (
     <Link href={`/jobs/${job.id}`}>
       <Card
@@ -50,7 +83,7 @@ export function JobCard({ job, featured }: JobCardProps) {
                 </h3>
                 <div className="flex items-center gap-2 mt-1 text-muted-foreground">
                   <Building2 className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{job.company.name}</span>
+                  <span className="truncate">{job.company}</span>
                 </div>
               </div>
               <TierBadge tier={job.tier} />
@@ -58,18 +91,26 @@ export function JobCard({ job, featured }: JobCardProps) {
 
             {/* Details */}
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                <span>{job.location}</span>
-              </div>
-              <span className="text-muted-foreground/50">•</span>
-              <Badge variant="outline" className="text-xs">
-                {job.remote}
-              </Badge>
-              <span className="text-muted-foreground/50">•</span>
+              {job.location && (
+                <>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    <span>{job.location}</span>
+                  </div>
+                  <span className="text-muted-foreground/50">•</span>
+                </>
+              )}
+              {job.remote && (
+                <>
+                  <Badge variant="outline" className="text-xs">
+                    Remote
+                  </Badge>
+                  <span className="text-muted-foreground/50">•</span>
+                </>
+              )}
               <div className="flex items-center gap-1">
                 <Briefcase className="h-3.5 w-3.5" />
-                <span>{job.level}</span>
+                <span>{levelLabels[job.level] || job.level}</span>
               </div>
             </div>
 
@@ -77,18 +118,18 @@ export function JobCard({ job, featured }: JobCardProps) {
             <div className="flex items-center justify-between pt-2 border-t border-border/50">
               <div className="flex items-center gap-3">
                 <Badge variant="secondary" className="text-xs">
-                  {job.type}
+                  {typeLabels[job.jobType] || job.jobType}
                 </Badge>
-                {job.salary && (
+                {salary && (
                   <div className="flex items-center gap-1 text-sm text-green-500">
                     <DollarSign className="h-3.5 w-3.5" />
-                    <span className="font-medium">{formatSalary(job.salary)}</span>
+                    <span className="font-medium">{salary}</span>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span>{timeAgo(job.postedAt)}</span>
+                <span>{timeAgo(job.scrapedAt)}</span>
               </div>
             </div>
           </div>
