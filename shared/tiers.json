@@ -1,0 +1,132 @@
+{
+  "tiers": {
+    "S+": {
+      "score": 100,
+      "companies": [
+        {"name": "Anthropic", "domain": "anthropic.com", "careers_url": "https://www.anthropic.com/careers"},
+        {"name": "OpenAI", "domain": "openai.com", "careers_url": "https://openai.com/careers"},
+        {"name": "Google DeepMind", "domain": "deepmind.google", "careers_url": "https://deepmind.google/careers/"},
+        {"name": "Renaissance Technologies", "domain": "rentec.com", "careers_url": null},
+        {"name": "TGS", "domain": "tgsmc.com", "careers_url": null},
+        {"name": "xAI", "domain": "x.ai", "careers_url": "https://x.ai/careers"},
+        {"name": "Citadel Securities", "domain": "citadelsecurities.com", "careers_url": "https://www.citadelsecurities.com/careers/"},
+        {"name": "Jane Street", "domain": "janestreet.com", "careers_url": "https://www.janestreet.com/join-jane-street/open-roles/"},
+        {"name": "HRT", "domain": "hudsonrivertrading.com", "careers_url": "https://www.hudsonrivertrading.com/careers/"}
+      ]
+    },
+    "S": {
+      "score": 95,
+      "companies": [
+        {"name": "Citadel", "domain": "citadel.com", "careers_url": "https://www.citadel.com/careers/"},
+        {"name": "D.E. Shaw", "domain": "deshaw.com", "careers_url": "https://www.deshaw.com/careers"},
+        {"name": "Jump Trading", "domain": "jumptrading.com", "careers_url": "https://www.jumptrading.com/careers/"},
+        {"name": "Optiver", "domain": "optiver.com", "careers_url": "https://optiver.com/working-at-optiver/career-opportunities/"},
+        {"name": "Two Sigma", "domain": "twosigma.com", "careers_url": "https://www.twosigma.com/careers/"},
+        {"name": "Tesla Autopilot", "domain": "tesla.com", "careers_url": "https://www.tesla.com/careers"},
+        {"name": "Five Rings", "domain": "fiverings.com", "careers_url": "https://fiverings.com/careers"},
+        {"name": "SpaceX", "domain": "spacex.com", "careers_url": "https://www.spacex.com/careers"}
+      ]
+    },
+    "S-": {
+      "score": 90,
+      "companies": [
+        {"name": "IMC", "domain": "imc.com", "careers_url": "https://www.imc.com/us/careers/"},
+        {"name": "SIG", "domain": "sig.com", "careers_url": "https://careers.sig.com/"},
+        {"name": "DRW", "domain": "drw.com", "careers_url": "https://drw.com/careers/"},
+        {"name": "Akuna Capital", "domain": "akunacapital.com", "careers_url": "https://akunacapital.com/careers"}
+      ]
+    },
+    "A++": {
+      "score": 85,
+      "companies": [
+        {"name": "Databricks", "domain": "databricks.com", "careers_url": "https://www.databricks.com/company/careers"},
+        {"name": "Netflix", "domain": "netflix.com", "careers_url": "https://jobs.netflix.com/"},
+        {"name": "Anduril", "domain": "anduril.com", "careers_url": "https://www.anduril.com/careers/"},
+        {"name": "Google", "domain": "google.com", "careers_url": "https://www.google.com/about/careers/applications/"},
+        {"name": "Meta", "domain": "meta.com", "careers_url": "https://www.metacareers.com/"},
+        {"name": "Sierra AI", "domain": "sierra.ai", "careers_url": "https://sierra.ai/careers"},
+        {"name": "Roblox", "domain": "roblox.com", "careers_url": "https://careers.roblox.com/"}
+      ]
+    },
+    "A+": {
+      "score": 80,
+      "companies": [
+        {"name": "Snowflake", "domain": "snowflake.com", "careers_url": "https://careers.snowflake.com/"},
+        {"name": "Waymo", "domain": "waymo.com", "careers_url": "https://waymo.com/careers/"},
+        {"name": "Stripe", "domain": "stripe.com", "careers_url": "https://stripe.com/jobs"},
+        {"name": "LinkedIn", "domain": "linkedin.com", "careers_url": "https://careers.linkedin.com/"},
+        {"name": "Figma", "domain": "figma.com", "careers_url": "https://www.figma.com/careers/"},
+        {"name": "Plaid", "domain": "plaid.com", "careers_url": "https://plaid.com/careers/"},
+        {"name": "Uber", "domain": "uber.com", "careers_url": "https://www.uber.com/us/en/careers/"},
+        {"name": "Airbnb", "domain": "airbnb.com", "careers_url": "https://careers.airbnb.com/"},
+        {"name": "Block", "domain": "block.xyz", "careers_url": "https://block.xyz/careers"},
+        {"name": "Ramp", "domain": "ramp.com", "careers_url": "https://ramp.com/careers"},
+        {"name": "Coinbase", "domain": "coinbase.com", "careers_url": "https://www.coinbase.com/careers"},
+        {"name": "Nvidia", "domain": "nvidia.com", "careers_url": "https://www.nvidia.com/en-us/about-nvidia/careers/"},
+        {"name": "Palantir", "domain": "palantir.com", "careers_url": "https://www.palantir.com/careers/"}
+      ]
+    },
+    "A": {
+      "score": 75,
+      "companies": [
+        {"name": "Notion", "domain": "notion.so", "careers_url": "https://www.notion.so/careers"},
+        {"name": "Apple", "domain": "apple.com", "careers_url": "https://www.apple.com/careers/"},
+        {"name": "Doordash", "domain": "doordash.com", "careers_url": "https://careers.doordash.com/"},
+        {"name": "Datadog", "domain": "datadoghq.com", "careers_url": "https://careers.datadoghq.com/"},
+        {"name": "Robinhood", "domain": "robinhood.com", "careers_url": "https://robinhood.com/us/en/careers/"},
+        {"name": "MongoDB", "domain": "mongodb.com", "careers_url": "https://www.mongodb.com/company/careers"},
+        {"name": "Tesla", "domain": "tesla.com", "careers_url": "https://www.tesla.com/careers"},
+        {"name": "Pinterest", "domain": "pinterest.com", "careers_url": "https://www.pinterestcareers.com/"}
+      ]
+    },
+    "A-": {
+      "score": 70,
+      "companies": [
+        {"name": "Snap", "domain": "snap.com", "careers_url": "https://careers.snap.com/"},
+        {"name": "AWS", "domain": "aws.amazon.com", "careers_url": "https://www.amazon.jobs/"},
+        {"name": "Dropbox", "domain": "dropbox.com", "careers_url": "https://www.dropbox.com/jobs"},
+        {"name": "Vercel", "domain": "vercel.com", "careers_url": "https://vercel.com/careers"},
+        {"name": "Cloudflare", "domain": "cloudflare.com", "careers_url": "https://www.cloudflare.com/careers/"},
+        {"name": "Reddit", "domain": "reddit.com", "careers_url": "https://www.redditinc.com/careers"},
+        {"name": "Twilio", "domain": "twilio.com", "careers_url": "https://www.twilio.com/company/jobs"},
+        {"name": "Instacart", "domain": "instacart.com", "careers_url": "https://instacart.careers/"}
+      ]
+    },
+    "B+": {
+      "score": 65,
+      "companies": [
+        {"name": "TikTok", "domain": "tiktok.com", "careers_url": "https://careers.tiktok.com/"},
+        {"name": "Discord", "domain": "discord.com", "careers_url": "https://discord.com/careers"},
+        {"name": "Amazon", "domain": "amazon.com", "careers_url": "https://www.amazon.jobs/"},
+        {"name": "Microsoft", "domain": "microsoft.com", "careers_url": "https://careers.microsoft.com/"},
+        {"name": "Bloomberg", "domain": "bloomberg.com", "careers_url": "https://www.bloomberg.com/careers"},
+        {"name": "AMD", "domain": "amd.com", "careers_url": "https://www.amd.com/en/corporate/careers"},
+        {"name": "Adobe", "domain": "adobe.com", "careers_url": "https://www.adobe.com/careers.html"},
+        {"name": "Atlassian", "domain": "atlassian.com", "careers_url": "https://www.atlassian.com/company/careers"}
+      ]
+    },
+    "B": {
+      "score": 60,
+      "companies": [
+        {"name": "Duolingo", "domain": "duolingo.com", "careers_url": "https://careers.duolingo.com/"},
+        {"name": "Asana", "domain": "asana.com", "careers_url": "https://asana.com/jobs"},
+        {"name": "Spotify", "domain": "spotify.com", "careers_url": "https://www.lifeatspotify.com/jobs"},
+        {"name": "Epic Games", "domain": "epicgames.com", "careers_url": "https://www.epicgames.com/site/en-US/careers"},
+        {"name": "Etsy", "domain": "etsy.com", "careers_url": "https://careers.etsy.com/"},
+        {"name": "Twitch", "domain": "twitch.tv", "careers_url": "https://www.twitch.tv/jobs"},
+        {"name": "PayPal", "domain": "paypal.com", "careers_url": "https://careers.pypl.com/"}
+      ]
+    },
+    "B-": {
+      "score": 55,
+      "companies": [
+        {"name": "Oracle", "domain": "oracle.com", "careers_url": "https://www.oracle.com/careers/"},
+        {"name": "Zoom", "domain": "zoom.us", "careers_url": "https://careers.zoom.us/"},
+        {"name": "IBM", "domain": "ibm.com", "careers_url": "https://www.ibm.com/careers"},
+        {"name": "Salesforce", "domain": "salesforce.com", "careers_url": "https://www.salesforce.com/company/careers/"},
+        {"name": "eBay", "domain": "ebay.com", "careers_url": "https://careers.ebayinc.com/"},
+        {"name": "Shopify", "domain": "shopify.com", "careers_url": "https://www.shopify.com/careers"}
+      ]
+    }
+  }
+}
