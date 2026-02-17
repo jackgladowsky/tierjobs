@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { JobCard } from '@/components/job-card';
 import { TierBadge } from '@/components/tier-badge';
-import { getFeaturedJobs, companies } from '@/lib/mock-data';
+import { FeaturedJobs } from '@/components/featured-jobs';
+import { StatsLive } from '@/components/stats-live';
 import { Tier } from '@/lib/types';
 import { ArrowRight, Sparkles, TrendingUp, Users, Zap } from 'lucide-react';
 
@@ -17,12 +17,6 @@ const tierDescriptions: Record<Tier, string> = {
 };
 
 export default function HomePage() {
-  const featuredJobs = getFeaturedJobs();
-  const tierCounts = companies.reduce((acc, c) => {
-    acc[c.tier] = (acc[c.tier] || 0) + 1;
-    return acc;
-  }, {} as Record<Tier, number>);
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -63,24 +57,7 @@ export default function HomePage() {
       {/* Stats */}
       <section className="border-b">
         <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-500">500+</div>
-              <div className="text-sm text-muted-foreground">Open Positions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-500">50+</div>
-              <div className="text-sm text-muted-foreground">Companies</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-500">$200k+</div>
-              <div className="text-sm text-muted-foreground">Avg. Salary</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-500">10k+</div>
-              <div className="text-sm text-muted-foreground">Placements</div>
-            </div>
-          </div>
+          <StatsLive />
         </div>
       </section>
 
@@ -102,11 +79,7 @@ export default function HomePage() {
               </Button>
             </Link>
           </div>
-          <div className="grid gap-4">
-            {featuredJobs.map(job => (
-              <JobCard key={job.id} job={job} featured />
-            ))}
-          </div>
+          <FeaturedJobs limit={5} />
         </div>
       </section>
 
@@ -126,9 +99,6 @@ export default function HomePage() {
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
                     <TierBadge tier={tier} size="lg" />
-                    <span className="text-sm text-muted-foreground">
-                      {tierCounts[tier] || 0} companies
-                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {tierDescriptions[tier]}

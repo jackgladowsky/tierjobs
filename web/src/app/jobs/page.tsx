@@ -1,5 +1,4 @@
-import { JobList } from '@/components/job-list';
-import { jobs } from '@/lib/mock-data';
+import { JobListLive } from '@/components/job-list-live';
 import { Briefcase } from 'lucide-react';
 
 export const metadata = {
@@ -16,10 +15,10 @@ export default function JobsPage() {
           All Jobs
         </h1>
         <p className="text-muted-foreground">
-          Browse {jobs.length} open positions at top-tier companies
+          Browse open positions at top-tier companies
         </p>
       </div>
-      <JobList jobs={jobs} />
+      <JobListLive limit={100} />
     </div>
   );
 }

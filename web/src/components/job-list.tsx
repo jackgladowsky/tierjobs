@@ -32,14 +32,14 @@ export function JobList({ jobs, showFilters = true, itemsPerPage = 10 }: JobList
         const search = filters.search.toLowerCase();
         const matchesSearch = 
           job.title.toLowerCase().includes(search) ||
-          job.company.name.toLowerCase().includes(search) ||
-          job.description.toLowerCase().includes(search);
+          job.company.toLowerCase().includes(search) ||
+          (job.description?.toLowerCase().includes(search) ?? false);
         if (!matchesSearch) return false;
       }
       if (filters.tier && job.tier !== filters.tier) return false;
       if (filters.level && job.level !== filters.level) return false;
-      if (filters.type && job.type !== filters.type) return false;
-      if (filters.remote && job.remote !== filters.remote) return false;
+      if (filters.type && job.jobType !== filters.type) return false;
+      if (filters.remote !== '' && String(job.remote) !== filters.remote) return false;
       if (filters.location && job.location !== filters.location) return false;
       return true;
     });

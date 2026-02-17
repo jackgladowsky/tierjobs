@@ -122,25 +122,23 @@ export const updateJobCount = mutation({
   },
 });
 
-// Get company stats (counts jobs directly since companies may not be populated)
+// Get company stats
 export const stats = query({
   args: {},
   handler: async (ctx) => {
-    // Count jobs directly
-    const jobs = await ctx.db.query("jobs").collect();
+    const companies = await ctx.db.query("companies").collect();
     
-    // Get unique companies from jobs
-    const companySet = new Set<string>();
     const byTier: Record<string, number> = {};
+    let totalJobs = 0;
     
-    for (const job of jobs) {
-      companySet.add(job.companySlug);
-      byTier[job.tier] = (byTier[job.tier] || 0) + 1;
+    for (const c of companies) {
+      byTier[c.tier] = (byTier[c.tier] || 0) + 1;
+      totalJobs += c.jobCount;
     }
     
     return {
-      totalCompanies: companySet.size,
-      totalJobs: jobs.length,
+      totalCompanies: companies.length,
+      totalJobs,
       byTier,
     };
   },
