@@ -11,31 +11,45 @@ from ..models import Job, Company, JobLevel, JobType
 
 # Map company slugs to their Greenhouse board names
 GREENHOUSE_BOARDS = {
-    "anthropic": "anthropic",
-    "figma": "figma",
-    "notion": "notion",
-    "ramp": "ramp",
-    "plaid": "plaid",
-    "discord": "discord",
-    "stripe": "stripe",
     "airbnb": "airbnb",
+    "anduril": "andurilindustries",
+    "anthropic": "anthropic",
+    "asana": "asana",
+    "block": "block",
+    "cloudflare": "cloudflare",
     "coinbase": "coinbase",
     "databricks": "databricks",
-    "doordash": "doordash",
-    "instacart": "instacart",
-    "reddit": "reddit",
-    "robinhood": "robinhood",
-    "asana": "asana",
+    "datadog": "datadog",
+    "discord": "discord",
+    "doordash": "doordashusa",
+    "dropbox": "dropbox",
     "duolingo": "duolingo",
+    "epic_games": "epicgames",
+    "etsy": "etsy",
+    "figma": "figma",
+    "instacart": "instacart",
+    "mongodb": "mongodb",
+    "pinterest": "pinterestpostings",
+    "reddit": "reddit",
+    "robinhood": "Robinhood",
+    "roblox": "roblox",
+    "snap": "snap",
+    "spotify": "spotify",
+    "stripe": "stripe",
+    "twilio": "twilio",
+    "uber": "uber",
+    "waymo": "Waymo",
+    "xai": "xai",
 }
 
 
 class GreenhouseScraper(APIBasedScraper):
     """Scraper for Greenhouse job boards."""
     
-    def __init__(self, company: Company, board_name: str | None = None):
+    def __init__(self, company: Company, board_name: str | None = None, full: bool = False):
         super().__init__(company)
         self.board_name = board_name or GREENHOUSE_BOARDS.get(company.slug, company.slug)
+        self.full = full
     
     async def scrape(self) -> list[Job]:
         """Scrape jobs from Greenhouse API."""
@@ -45,13 +59,31 @@ class GreenhouseScraper(APIBasedScraper):
         jobs = []
         
         for job_data in data.get("jobs", []):
-            job = self.parse_job(job_data)
+            if self.full:
+                # Fetch full details for each job
+                job = await self.fetch_full_job(str(job_data["id"]))
+            else:
+                job = self.parse_job(job_data)
             if job:
                 jobs.append(job)
         
         return jobs
     
-    def parse_job(self, data: dict) -> Job | None:
+    async def fetch_full_job(self, job_id: str) -> Job | None:
+        """Fetch full job details including description."""
+        url = f"https://boards-api.greenhouse.io/v1/boards/{self.board_name}/jobs/{job_id}"
+        try:
+            data = await self.fetch_json(url)
+            return self.parse_job(data, full=True)
+        except Exception as e:
+            print(f"Error fetching job {job_id}: {e}")
+            return None
+    
+    async def fetch_single_job(self, job_id: str) -> Job | None:
+        """Fetch a single job by ID (for --full-id testing)."""
+        return await self.fetch_full_job(job_id)
+    
+    def parse_job(self, data: dict, full: bool = False) -> Job | None:
         """Parse a job from Greenhouse API response."""
         try:
             job_id = str(data["id"])
@@ -72,16 +104,22 @@ class GreenhouseScraper(APIBasedScraper):
             level = self.infer_level(title)
             job_type = self.infer_job_type(title)
 
-            # Get department/team
+            # Get department/team (available in full mode)
             team = None
             if data.get("departments"):
                 team = data["departments"][0].get("name")
 
-            # Extract posting date
+            # Extract description (only in full mode)
+            description = None
+            if full and data.get("content"):
+                description = data["content"]
+
+            # Extract posting date (prefer first_published over updated_at)
             posted_at = None
-            if data.get("updated_at"):
+            date_field = data.get("first_published") or data.get("updated_at")
+            if date_field:
                 try:
-                    posted_at = datetime.fromisoformat(data["updated_at"].replace("Z", "+00:00"))
+                    posted_at = datetime.fromisoformat(date_field.replace("Z", "+00:00"))
                 except Exception:
                     pass
 
@@ -94,6 +132,7 @@ class GreenhouseScraper(APIBasedScraper):
                 level=level,
                 job_type=job_type,
                 team=team,
+                description=description,
                 posted_at=posted_at,
             )
         except Exception as e:

@@ -11,10 +11,9 @@ from ..models import Job, Company, JobLevel, JobType
 
 # Map company slugs to their Lever site names
 LEVER_SITES = {
-    "netflix": "netflix",
-    "cloudflare": "cloudflare",
-    "vercel": "vercel",
-    "datadog": "datadog",
+    "atlassian": "atlassian",
+    "palantir": "palantir",
+    "plaid": "plaid",
 }
 
 

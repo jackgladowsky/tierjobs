@@ -44,20 +44,20 @@ def load_companies() -> dict[str, Company]:
     return companies
 
 
-def get_scraper(company: Company):
+def get_scraper(company: Company, full: bool = False):
     """Get the appropriate scraper for a company."""
     slug = company.slug
     
     # Check if it's a Greenhouse company
     if slug in GREENHOUSE_BOARDS:
-        return GreenhouseScraper(company)
+        return GreenhouseScraper(company, full=full)
     
     # Check if it's a Lever company
     if slug in LEVER_SITES:
         return LeverScraper(company)
     
     # Default to Greenhouse with company slug
-    return GreenhouseScraper(company)
+    return GreenhouseScraper(company, full=full)
 
 
 @click.group()
@@ -98,7 +98,9 @@ def companies():
 @click.option("--output", "-o", type=click.Path(), help="Output JSON file")
 @click.option("--push", is_flag=True, help="Push jobs to Convex database")
 @click.option("--roles", "-r", multiple=True, help="Filter by job type (e.g., -r swe -r mle). Options: swe, mle, ds, quant, pm, design, devops, security, research, other")
-def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str]):
+@click.option("--full", is_flag=True, help="Fetch full job details including description (slower)")
+@click.option("--full-id", type=str, help="Fetch full details for a single job ID (for testing)")
+def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str], full: bool, full_id: str | None):
     """Scrape jobs from a specific company."""
     all_companies = load_companies()
 
@@ -117,9 +119,38 @@ def scrape(company_slug: str, output: str | None, push: bool, roles: tuple[str])
             return
 
     company = all_companies[company_slug]
-    scraper = get_scraper(company)
+    
+    # Handle --full-id for single job testing
+    if full_id:
+        console.print(f"Fetching full details for job [cyan]{full_id}[/cyan]...")
+        scraper = get_scraper(company, full=True)
+        
+        async def fetch_single():
+            job = await scraper.fetch_single_job(full_id)
+            return job
+        
+        job = asyncio.run(fetch_single())
+        if job:
+            console.print(f"[green]✓[/green] Fetched job: {job.title}")
+            # Print all fields
+            job_dict = job.model_dump()
+            for k, v in job_dict.items():
+                val = str(v)[:100] + "..." if v and len(str(v)) > 100 else str(v)
+                status = "✓" if v not in [None, [], ""] else "✗"
+                console.print(f"  {status} {k}: {val}")
+            
+            if output:
+                with open(output, "w") as f:
+                    json.dump([job.model_dump()], f, indent=2, default=str)
+                console.print(f"Saved to {output}")
+        else:
+            console.print(f"[red]✗[/red] Failed to fetch job {full_id}")
+        return
+    
+    scraper = get_scraper(company, full=full)
 
-    console.print(f"Scraping [cyan]{company.name}[/cyan] ({company.tier})...")
+    mode_msg = " [yellow](full mode - fetching descriptions)[/yellow]" if full else ""
+    console.print(f"Scraping [cyan]{company.name}[/cyan] ({company.tier}){mode_msg}...")
     if roles:
         console.print(f"Filtering for roles: {', '.join(roles)}")
 

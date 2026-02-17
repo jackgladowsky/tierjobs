@@ -1,79 +1,79 @@
-name,slug,tier,tier_score,scraper_type,careers_url,board_id,notes
-Anthropic,anthropic,S+,100,,https://www.anthropic.com/careers,,
-Citadel Securities,citadel_securities,S+,100,,https://www.citadelsecurities.com/careers/,,
-Google DeepMind,google_deepmind,S+,100,,https://deepmind.google/careers/,,
-HRT,hrt,S+,100,,https://www.hudsonrivertrading.com/careers/,,
-Jane Street,jane_street,S+,100,,https://www.janestreet.com/join-jane-street/open-roles/,,
-OpenAI,openai,S+,100,,https://openai.com/careers,,
-Renaissance Technologies,renaissance_technologies,S+,100,,,,
-TGS,tgs,S+,100,,,,
-xAI,xai,S+,100,,https://x.ai/careers,,
-Citadel,citadel,S,95,,https://www.citadel.com/careers/,,
-D.E. Shaw,de_shaw,S,95,,https://www.deshaw.com/careers,,
-Five Rings,five_rings,S,95,,https://fiverings.com/careers,,
-Jump Trading,jump_trading,S,95,,https://www.jumptrading.com/careers/,,
-Optiver,optiver,S,95,,https://optiver.com/working-at-optiver/career-opportunities/,,
-SpaceX,spacex,S,95,,https://www.spacex.com/careers,,
-Tesla Autopilot,tesla_autopilot,S,95,,https://www.tesla.com/careers,,
-Two Sigma,two_sigma,S,95,,https://www.twosigma.com/careers/,,
-Akuna Capital,akuna_capital,S-,90,,https://akunacapital.com/careers,,
-DRW,drw,S-,90,,https://drw.com/careers/,,
-IMC,imc,S-,90,,https://www.imc.com/us/careers/,,
-SIG,sig,S-,90,,https://careers.sig.com/,,
-Anduril,anduril,A++,85,,https://www.anduril.com/careers/,,
-Databricks,databricks,A++,85,,https://www.databricks.com/company/careers,,
-Google,google,A++,85,,https://www.google.com/about/careers/applications/,,
-Meta,meta,A++,85,,https://www.metacareers.com/,,
-Netflix,netflix,A++,85,,https://jobs.netflix.com/,,
-Roblox,roblox,A++,85,,https://careers.roblox.com/,,
-Sierra AI,sierra_ai,A++,85,,https://sierra.ai/careers,,
-Airbnb,airbnb,A+,80,,https://careers.airbnb.com/,,
-Block,block,A+,80,,https://block.xyz/careers,,
-Coinbase,coinbase,A+,80,,https://www.coinbase.com/careers,,
-Figma,figma,A+,80,,https://www.figma.com/careers/,,
-LinkedIn,linkedin,A+,80,,https://careers.linkedin.com/,,
-Nvidia,nvidia,A+,80,,https://www.nvidia.com/en-us/about-nvidia/careers/,,
-Palantir,palantir,A+,80,,https://www.palantir.com/careers/,,
-Plaid,plaid,A+,80,,https://plaid.com/careers/,,
-Ramp,ramp,A+,80,,https://ramp.com/careers,,
-Snowflake,snowflake,A+,80,,https://careers.snowflake.com/,,
-Stripe,stripe,A+,80,,https://stripe.com/jobs,,
-Uber,uber,A+,80,,https://www.uber.com/us/en/careers/,,
-Waymo,waymo,A+,80,,https://waymo.com/careers/,,
-Apple,apple,A,75,,https://www.apple.com/careers/,,
-Datadog,datadog,A,75,,https://careers.datadoghq.com/,,
-Doordash,doordash,A,75,,https://careers.doordash.com/,,
-MongoDB,mongodb,A,75,,https://www.mongodb.com/company/careers,,
-Notion,notion,A,75,,https://www.notion.so/careers,,
-Pinterest,pinterest,A,75,,https://www.pinterestcareers.com/,,
-Robinhood,robinhood,A,75,,https://robinhood.com/us/en/careers/,,
-Tesla,tesla,A,75,,https://www.tesla.com/careers,,
-AWS,aws,A-,70,,https://www.amazon.jobs/,,
-Cloudflare,cloudflare,A-,70,,https://www.cloudflare.com/careers/,,
-Dropbox,dropbox,A-,70,,https://www.dropbox.com/jobs,,
-Instacart,instacart,A-,70,,https://instacart.careers/,,
-Reddit,reddit,A-,70,,https://www.redditinc.com/careers,,
-Snap,snap,A-,70,,https://careers.snap.com/,,
-Twilio,twilio,A-,70,,https://www.twilio.com/company/jobs,,
-Vercel,vercel,A-,70,,https://vercel.com/careers,,
-AMD,amd,B+,65,,https://www.amd.com/en/corporate/careers,,
-Adobe,adobe,B+,65,,https://www.adobe.com/careers.html,,
-Amazon,amazon,B+,65,,https://www.amazon.jobs/,,
-Atlassian,atlassian,B+,65,,https://www.atlassian.com/company/careers,,
-Bloomberg,bloomberg,B+,65,,https://www.bloomberg.com/careers,,
-Discord,discord,B+,65,,https://discord.com/careers,,
-Microsoft,microsoft,B+,65,,https://careers.microsoft.com/,,
-TikTok,tiktok,B+,65,,https://careers.tiktok.com/,,
-Asana,asana,B,60,,https://asana.com/jobs,,
-Duolingo,duolingo,B,60,,https://careers.duolingo.com/,,
-Epic Games,epic_games,B,60,,https://www.epicgames.com/site/en-US/careers,,
-Etsy,etsy,B,60,,https://careers.etsy.com/,,
-PayPal,paypal,B,60,,https://careers.pypl.com/,,
-Spotify,spotify,B,60,,https://www.lifeatspotify.com/jobs,,
-Twitch,twitch,B,60,,https://www.twitch.tv/jobs,,
-IBM,ibm,B-,55,,https://www.ibm.com/careers,,
-Oracle,oracle,B-,55,,https://www.oracle.com/careers/,,
-Salesforce,salesforce,B-,55,,https://www.salesforce.com/company/careers/,,
-Shopify,shopify,B-,55,,https://www.shopify.com/careers,,
-Zoom,zoom,B-,55,,https://careers.zoom.us/,,
-eBay,ebay,B-,55,,https://careers.ebayinc.com/,,
+Company,Tier,ATS Platform,Job Board URL,Careers Page URL
+Anthropic,S+,Greenhouse,https://job-boards.greenhouse.io/anthropic,https://job-boards.greenhouse.io/anthropic
+Citadel Securities,S+,Custom/Internal,https://www.citadelsecurities.com/careers/open-opportunities/,https://www.citadelsecurities.com/careers/
+Google DeepMind,S+,Custom (Google Internal),https://deepmind.google/careers/,https://deepmind.google/careers/
+HRT,S+,Custom/Internal,https://www.hudsonrivertrading.com/careers/,https://www.hudsonrivertrading.com/careers/
+Jane Street,S+,Custom/Internal,https://www.janestreet.com/join-jane-street/open-roles/,https://www.janestreet.com/join-jane-street/open-roles/
+OpenAI,S+,Ashby,https://jobs.ashbyhq.com/openai,https://openai.com/careers
+Renaissance Technologies,S+,N/A,N/A,N/A
+TGS,S+,N/A,N/A,N/A
+xAI,S+,Greenhouse,https://job-boards.greenhouse.io/xai,https://x.ai/careers
+Citadel,S,Custom/Internal,https://www.citadel.com/careers/open-opportunities/,https://www.citadel.com/careers/
+D.E. Shaw,S,Custom/Internal,https://www.deshaw.com/careers,https://www.deshaw.com/careers
+Five Rings,S,Custom/Internal,https://fiverings.com/careers,https://fiverings.com/careers
+Jump Trading,S,Custom/Internal,https://www.jumptrading.com/careers/,https://www.jumptrading.com/careers/
+Optiver,S,Custom/Internal,https://optiver.com/working-at-optiver/career-opportunities/,https://optiver.com/working-at-optiver/career-opportunities/
+SpaceX,S,Custom/Internal,https://www.spacex.com/careers,https://www.spacex.com/careers
+Tesla Autopilot,S,Custom (Tesla Internal),https://www.tesla.com/careers,https://www.tesla.com/careers
+Two Sigma,S,Custom/Internal,https://www.twosigma.com/careers/,https://www.twosigma.com/careers/
+Akuna Capital,S-,Custom/Internal,https://akunacapital.com/careers,https://akunacapital.com/careers
+DRW,S-,Custom/Internal,https://drw.com/careers/,https://drw.com/careers/
+IMC,S-,Custom/Internal,https://www.imc.com/us/careers/,https://www.imc.com/us/careers/
+SIG,S-,Custom/Internal,https://careers.sig.com/,https://careers.sig.com/
+Anduril,A++,Greenhouse,https://boards.greenhouse.io/andurilindustries,https://www.anduril.com/careers/
+Databricks,A++,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=databricks,https://www.databricks.com/company/careers
+Google,A++,Custom (Google Internal),https://www.google.com/about/careers/applications/,https://www.google.com/about/careers/applications/
+Meta,A++,Custom (Meta Internal),https://www.metacareers.com/,https://www.metacareers.com/
+Netflix,A++,Workday,https://netflix.wd1.myworkdayjobs.com/Netflix,https://jobs.netflix.com/
+Roblox,A++,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=roblox,https://careers.roblox.com/
+Sierra AI,A++,Ashby,https://jobs.ashbyhq.com/sierra,https://sierra.ai/careers
+Airbnb,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=airbnb,https://careers.airbnb.com/
+Block,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=block,https://block.xyz/careers
+Coinbase,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=coinbase,https://www.coinbase.com/careers
+Figma,A+,Greenhouse,https://boards.greenhouse.io/figma,https://www.figma.com/careers/
+LinkedIn,A+,Custom (LinkedIn Internal),https://careers.linkedin.com/,https://careers.linkedin.com/
+Nvidia,A+,Workday,https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite,https://www.nvidia.com/en-us/about-nvidia/careers/
+Palantir,A+,Lever,https://jobs.lever.co/palantir,https://www.palantir.com/careers/
+Plaid,A+,Lever,https://jobs.lever.co/plaid,https://plaid.com/careers/
+Ramp,A+,Ashby,https://jobs.ashbyhq.com/ramp,https://ramp.com/careers
+Snowflake,A+,Workday,https://careers.snowflake.com/us/en/search-results,https://careers.snowflake.com/
+Stripe,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=stripe,https://stripe.com/jobs
+Uber,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=uber,https://www.uber.com/us/en/careers/
+Waymo,A+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=Waymo,https://waymo.com/careers/
+Apple,A,Custom (Apple Internal),https://www.apple.com/careers/,https://www.apple.com/careers/
+Datadog,A,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=datadog,https://careers.datadoghq.com/
+Doordash,A,Greenhouse,https://job-boards.greenhouse.io/doordashusa,https://careers.doordash.com/
+MongoDB,A,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=mongodb,https://www.mongodb.com/company/careers
+Notion,A,Ashby,https://jobs.ashbyhq.com/notion,https://www.notion.so/careers
+Pinterest,A,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=pinterestpostings,https://www.pinterestcareers.com/
+Robinhood,A,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=Robinhood,https://robinhood.com/us/en/careers/
+Tesla,A,Custom (Tesla Internal),https://www.tesla.com/careers,https://www.tesla.com/careers
+AWS,A-,Custom (Amazon Internal),https://www.amazon.jobs/,https://www.amazon.jobs/
+Cloudflare,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=cloudflare,https://www.cloudflare.com/careers/
+Dropbox,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=dropbox,https://www.dropbox.com/jobs
+Instacart,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=instacart,https://instacart.careers/
+Reddit,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=reddit,https://www.redditinc.com/careers
+Snap,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=snap,https://careers.snap.com/
+Twilio,A-,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=twilio,https://www.twilio.com/company/jobs
+Vercel,A-,Ashby,https://jobs.ashbyhq.com/vercel,https://vercel.com/careers
+AMD,B+,Workday,https://amd.wd1.myworkdayjobs.com/AMD,https://www.amd.com/en/corporate/careers
+Adobe,B+,Workday,https://adobe.wd5.myworkdayjobs.com/external_experienced,https://www.adobe.com/careers.html
+Amazon,B+,Custom (Amazon Internal),https://www.amazon.jobs/,https://www.amazon.jobs/
+Atlassian,B+,Lever,https://jobs.lever.co/atlassian,https://www.atlassian.com/company/careers
+Bloomberg,B+,Custom/Internal,https://www.bloomberg.com/careers,https://www.bloomberg.com/careers
+Discord,B+,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=discord,https://discord.com/careers
+Microsoft,B+,Custom (Microsoft Internal),https://careers.microsoft.com/,https://careers.microsoft.com/
+TikTok,B+,Custom (ByteDance Internal),https://careers.tiktok.com/,https://careers.tiktok.com/
+Asana,B,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=asana,https://asana.com/jobs
+Duolingo,B,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=duolingo,https://careers.duolingo.com/
+Epic Games,B,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=epicgames,https://www.epicgames.com/site/en-US/careers
+Etsy,B,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=etsy,https://careers.etsy.com/
+PayPal,B,Workday,https://paypal.wd1.myworkdayjobs.com/jobs,https://careers.pypl.com/
+Spotify,B,Greenhouse,https://boards.greenhouse.io/embed/job_board?for=spotify,https://www.lifeatspotify.com/jobs
+Twitch,B,Custom (Amazon Internal),https://www.twitch.tv/jobs,https://www.twitch.tv/jobs
+IBM,B-,Workday,https://ibm.wd1.myworkdayjobs.com/IBM_Careers,https://www.ibm.com/careers
+Oracle,B-,Custom (Oracle Internal),https://www.oracle.com/careers/,https://www.oracle.com/careers/
+Salesforce,B-,Workday,https://salesforce.wd12.myworkdayjobs.com/External_Career_Site,https://www.salesforce.com/company/careers/
+Shopify,B-,Custom/Internal,https://www.shopify.com/careers,https://www.shopify.com/careers
+Zoom,B-,Workday,https://zoom.wd5.myworkdayjobs.com/Zoom,https://careers.zoom.us/
+eBay,B-,Workday,https://ebay.wd5.myworkdayjobs.com/apply,https://careers.ebayinc.com/
