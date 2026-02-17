@@ -18,7 +18,7 @@ from .scrapers.lever import LEVER_SITES
 console = Console()
 
 # Load tier data
-TIERS_PATH = Path(__file__).parent.parent.parent.parent.parent / "shared" / "tiers.json"
+TIERS_PATH = Path(__file__).parent.parent.parent.parent / "shared" / "tiers.json"
 
 
 def load_companies() -> dict[str, Company]:
