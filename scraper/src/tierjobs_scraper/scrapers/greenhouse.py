@@ -4,6 +4,7 @@ Many companies use Greenhouse (boards.greenhouse.io).
 They have a public JSON API at: https://boards-api.greenhouse.io/v1/boards/{company}/jobs
 """
 
+from datetime import datetime
 from .base import APIBasedScraper
 from ..models import Job, Company, JobLevel, JobType
 
@@ -56,26 +57,34 @@ class GreenhouseScraper(APIBasedScraper):
             job_id = str(data["id"])
             title = data["title"]
             url = data["absolute_url"]
-            
+
             # Extract location
             location = None
             if data.get("location"):
                 location = data["location"].get("name")
-            
+
             # Check if remote
             remote = False
             if location and "remote" in location.lower():
                 remote = True
-            
+
             # Infer level from title
             level = self.infer_level(title)
             job_type = self.infer_job_type(title)
-            
+
             # Get department/team
             team = None
             if data.get("departments"):
                 team = data["departments"][0].get("name")
-            
+
+            # Extract posting date
+            posted_at = None
+            if data.get("updated_at"):
+                try:
+                    posted_at = datetime.fromisoformat(data["updated_at"].replace("Z", "+00:00"))
+                except Exception:
+                    pass
+
             return self.create_job(
                 id=self.make_job_id(job_id),
                 title=title,
@@ -85,6 +94,7 @@ class GreenhouseScraper(APIBasedScraper):
                 level=level,
                 job_type=job_type,
                 team=team,
+                posted_at=posted_at,
             )
         except Exception as e:
             print(f"Error parsing job: {e}")

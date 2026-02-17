@@ -4,6 +4,7 @@ Many companies use Lever (jobs.lever.co).
 They have a public API at: https://api.lever.co/v0/postings/{company}
 """
 
+from datetime import datetime
 from .base import APIBasedScraper
 from ..models import Job, Company, JobLevel, JobType
 
@@ -44,25 +45,34 @@ class LeverScraper(APIBasedScraper):
             job_id = data["id"]
             title = data["text"]
             url = data["hostedUrl"]
-            
+
             # Extract location
             location = data.get("categories", {}).get("location")
-            
+
             # Check if remote
             remote = False
             if location and "remote" in location.lower():
                 remote = True
-            
+
             # Infer level and type
             level = self.infer_level(title)
             job_type = self.infer_job_type(title)
-            
+
             # Get team/department
             team = data.get("categories", {}).get("team")
-            
+
             # Get description
             description = data.get("descriptionPlain")
-            
+
+            # Extract posting date
+            posted_at = None
+            if data.get("createdAt"):
+                try:
+                    # Lever API returns Unix timestamp in milliseconds
+                    posted_at = datetime.fromtimestamp(data["createdAt"] / 1000)
+                except Exception:
+                    pass
+
             return self.create_job(
                 id=self.make_job_id(job_id),
                 title=title,
@@ -73,6 +83,7 @@ class LeverScraper(APIBasedScraper):
                 job_type=job_type,
                 team=team,
                 description=description[:500] if description else None,
+                posted_at=posted_at,
             )
         except Exception as e:
             print(f"Error parsing job: {e}")

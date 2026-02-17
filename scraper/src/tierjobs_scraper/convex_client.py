@@ -10,7 +10,7 @@ from .models import Job, Company
 
 
 # Default to the dev deployment URL
-DEFAULT_SITE_URL = "https://deafening-goldfinch-885.convex.site"
+DEFAULT_SITE_URL = "https://greedy-weasel-36.convex.site"
 
 
 class ConvexClient:
